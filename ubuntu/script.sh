@@ -37,7 +37,7 @@ function prompt {
     while true; do
         read -r -p "$prompt_text" input
 
-        case $input in
+        case "$input" in
             [yY][eE][sS]|[yY])
                 return 1
                 ;;
@@ -68,7 +68,7 @@ if [ $? = 1 ]; then
 fi
 
 # Configure UFW
-prompt 'Enable UFW?' 'y'
+prompt 'Enable and configure UFW?' 'y'
 if [ $? = 1 ]; then
     echo Configuring UFW
     apt-get install ufw
@@ -85,7 +85,7 @@ if [ $? = 1 ]; then
 fi
 
 # Configure SSH
-prompt 'Enable sshd?' 'y'
+prompt 'Enable and configure sshd?' 'y'
 if [ $? = 1 ]; then
     echo Configuring sshd
     apt-get install openssh
@@ -144,6 +144,10 @@ prompt 'Fix administrators?' 'y'
 if [ $? = 1 ]; then
     echo Fixing administrators
 
+    sudoers='sudo'
+    prompt "Is \`sudo\` the name of the sudoers group? (If you don't know, run \`groups\` and look for something like \`sudo\` or \`wheel\`)" 'y'
+    if [ $? = 0 ]; then read -r -p 'Sudoers group name: ' sudoers; fi
+
     read -r -p 'Path to list of intended administrators: ' admin_path
     read -r -p 'Path to list of intended standard users: ' normal_path
 
@@ -152,18 +156,18 @@ if [ $? = 1 ]; then
     echo Ensuring admins are part of the sudo group
 
     while read -r admin; do
-        if ! id -nG "$admin" | grep -qw 'sudo'; then
+        if ! id -nG "$admin" | grep -qw "$sudoers"; then
             echo User $admin doesn\'t have admin perms, fixing
-            usermod -aG sudo $admin
+            usermod -aG "$sudoers" "$admin"
         fi
     done < "$admin_path"
 
     echo Ensuring standard users are not part of the sudo group
 
     while read -r normal; do
-        if id -nG "$normal" | grep -qw 'sudo'; then
+        if id -nG "$normal" | grep -qw "$sudoers"; then
             echo User $normal has admin perms and shouldn\'t, fixing
-            gpasswd --delete "$normal" sudo
+            gpasswd --delete "$normal" "$sudoers"
         fi
     done < "$normal_path"
 
