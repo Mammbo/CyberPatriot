@@ -1,6 +1,6 @@
 # CyberPatriot
 
-Scripts and whatnot for use in CyberPatriot.
+Scripts and checklists for use in CyberPatriot.
 
 ## License
 
