@@ -108,12 +108,12 @@ if [ $? = 1 ]; then
     echo Done
 fi
 
-prompt 'Find unauthorized users?' 'y'
+prompt 'Find unauthorized users and add missing ones?' 'y'
 
 if [ $? = 1 ]; then
     echo Checking for unauthorized users
 
-    read -r -p 'Path to list of allowed usernames (should include admins): ' users_file
+    read -r -p 'Path to list of allowed usernames (should include admins and unadded users): ' users_file
 
     get_users
 
@@ -127,14 +127,27 @@ if [ $? = 1 ]; then
         fi
     done
 
-    prompt 'Delete found users?'
+    if [ $unauthorized ]; then
+        prompt 'Delete found users?'
 
-    if [ $? = 1 ]; then
-        for user in $unauthorized; do
-            echo Deleting $user
-            userdel $user
-        done
+        if [ $? = 1 ]; then
+            for user in $unauthorized; do
+                echo Deleting $user
+                userdel $user
+            done
+        fi
     fi
+
+    echo Checking for missing users
+
+    get_users
+
+    while read -r user; do
+        if ! printf "$users" | grep -wq "$user"; then
+            echo Adding missing user $user
+            useradd $user
+        fi
+    done < "$users_file"
 
     echo Done
 fi
