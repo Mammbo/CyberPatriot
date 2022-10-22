@@ -1,6 +1,6 @@
 # Ubuntu Checklist
 
-## Managed by script
+## Managed By Script
 
 - [ ] Run updates
 - [ ] Enable & configure UFW
@@ -9,7 +9,7 @@
 - [ ] Add missing users
 - [ ] Add/remove users from sudo group
 
-## Not managed by script
+## Not Managed By Script
 
 - [ ] Enable auto-updates
   1. Run the Software Updater
