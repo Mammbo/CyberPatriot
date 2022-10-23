@@ -13,13 +13,6 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-echo 'Ubuntu CyberPatriot Script'
-echo
-echo 'CyberPatriot Scripts  Copyright (C) 2022  Adam Thompson-Sharpe'
-echo 'Licensed under the GNU General Public License, Version 3.0'
-echo
-echo 'Make sure to run this as root!'
-echo
 
 function get_users {
     users=$(awk -F: '{if ($3 >= 1000) print $1}' < /etc/passwd)
@@ -57,132 +50,173 @@ function prompt {
     done
 }
 
-# System updates
-prompt 'Run updates?' 'y'
-if [ $? = 1 ]; then
-    prompt 'Reboot after updates? Recommended if DE crashes during updates' 'n'
-    apt-get update
-    apt-get upgrade -y
-    if [ $? = 1 ]; then reboot; fi
-    exit
-fi
+function reprompt_var {
+    reprompt_text="$1"
+    reprompt_value="${!2}"
 
-# Configure UFW
-prompt 'Enable and configure UFW?' 'y'
-if [ $? = 1 ]; then
-    echo Configuring UFW
-    apt-get install ufw
+    if [ $reprompt_value ]; then reprompt_text+=" [$reprompt_value]: "
+    else reprompt_text+=': '; fi
 
-    rule='default deny'
-    while ! [ "$rule" = '' ]; do
-        ufw $rule
-        read -r -p 'UFW rule to add, eg. `allow ssh` (leave blank to finish adding rules): ' rule
-    done
+    read -r -p "$reprompt_text" reprompt_new_val
 
-    echo Enabling UFW
-    ufw enable
-    echo Done
-fi
+    if [ "$reprompt_new_val" ]; then reprompt_value="$reprompt_new_val"; fi
+}
 
-# Configure SSH
-prompt 'Enable and configure sshd?' 'y'
-if [ $? = 1 ]; then
-    echo Configuring sshd
-    apt-get install openssh
+echo 'Ubuntu CyberPatriot Script'
+echo
+echo 'CyberPatriot Scripts  Copyright (C) 2022  Adam Thompson-Sharpe'
+echo 'Licensed under the GNU General Public License, Version 3.0'
+echo
+echo 'Make sure to run this as root!'
+echo "Current user: $(whoami)"
 
-    echo Enabling \& starting service
+sshd_conf='/etc/ssh/sshd_config.d/mbh.conf'
+sudo_group='sudo'
 
-    systemctl enable sshd
-    systemctl start sshd
+function menu {
+    echo
+    echo '1) Run updates                4) Find and remove unauthorized users'
+    echo '2) Enable & Configure UFW     5) Add missing users'
+    echo '3) Enable & configure sshd    6) Fix administrators'
+    echo
+    echo '99) Exit script'
+    read -r -p '> ' input
 
-    prompt 'Disable root logins?' 'y'
-    if [ $? = 1 ]; then echo 'PermitRootLogin no' >> /etc/ssh/sshd_config; fi
+    case "$input" in
+        # Run updates
+        '1')
+            prompt 'Reboot after updates? Recommended if DE crashes during updates' 'n'
+            apt-get update
+            apt-get upgrade -y
+            if [ $? = 1 ]; then reboot; fi
+            echo 'Done updating!'
+            ;;
 
-    prompt 'Disallow empty passwords?' 'y'
-    if [ $? = 1 ]; then echo 'PermitEmptyPasswords no' >> /etc/ssh/sshd_config; fi
+        # Set up UFW
+        '2')
+            apt-get install ufw -y
 
-    echo Restarting service
-
-    systemctl restart sshd
-
-    echo Done
-fi
-
-prompt 'Find unauthorized users and add missing ones?' 'y'
-
-if [ $? = 1 ]; then
-    echo Checking for unauthorized users
-
-    read -r -p 'Path to list of allowed usernames (should include admins and unadded users): ' users_file
-
-    get_users
-
-    unauthorized=()
-
-    for user in $users; do
-        if [ "$user" = 'nobody' ]; then continue; fi
-        if ! grep -Fxq "$user" "$users_file"; then
-            echo Unauthorized user: $user
-            unauthorized+=("$user")
-        fi
-    done
-
-    if [ $unauthorized ]; then
-        prompt 'Delete found users?'
-
-        if [ $? = 1 ]; then
-            for user in $unauthorized; do
-                echo Deleting $user
-                userdel $user
+            rule='default deny'
+            while ! [ "$rule" = '' ]; do
+                ufw $rule
+                read -r -p 'UFW rule to add, eg. `allow ssh` (leave blank to finish adding rules): ' rule
             done
-        fi
-    fi
 
-    echo Checking for missing users
+            ufw enable
+            echo 'Done configuring!'
+            ;;
 
-    get_users
+        # Set up sshd
+        '3')
+            apt-get install openssh -y
 
-    while read -r user; do
-        if ! printf "$users" | grep -wq "$user"; then
-            echo Adding missing user $user
-            useradd $user
-        fi
-    done < "$users_file"
+            echo 'Enabling & starting service'
+            systemctl enable sshd
+            systemctl start sshd
 
-    echo Done
-fi
+            rm -f "$sshd_conf"
 
-prompt 'Fix administrators?' 'y'
+            prompt 'Permit root logins?' 'y'
+            if [ $? = 1 ]; then echo 'PermitRootLogin no' >> "$sshd_conf"
+            else echo 'PermitRootLogin yes' >> "$sshd_conf"; fi
 
-if [ $? = 1 ]; then
-    echo Fixing administrators
+            prompt 'Permit empty passwords?' 'y'
+            if [ $? = 1 ]; then echo 'PermitEmptyPasswords no' >> "$sshd_conf"
+            else echo 'PermitEmptyPasswords yes' >> "$sshd_conf"; fi
 
-    sudoers='sudo'
-    prompt "Is \`sudo\` the name of the sudoers group? (If you don't know, run \`groups\` and look for something like \`sudo\` or \`wheel\`)" 'y'
-    if [ $? = 0 ]; then read -r -p 'Sudoers group name: ' sudoers; fi
+            echo Restarting service
+            systemctl restart sshd
+            echo 'Done configuring!'
+            ;;
 
-    read -r -p 'Path to list of intended administrators: ' admin_path
-    read -r -p 'Path to list of intended standard users: ' normal_path
+        # Find and remove unauthorized users
+        '4')
+            reprompt_var 'Path to list of allowed usernames' 'users_file'
+            users_file="$reprompt_value"
+            get_users
 
-    get_users
+            unauthorized=()
 
-    echo Ensuring admins are part of the sudo group
+            for user in $users; do
+                if [ "$user" = 'nobody' ]; then continue; fi
+                if ! grep -Fxq "$user" "$users_file"; then
+                    echo Unauthorized user: $user
+                    unauthorized+=("$user")
+                fi
+            done
 
-    while read -r admin; do
-        if ! id -nG "$admin" | grep -qw "$sudoers"; then
-            echo User $admin doesn\'t have admin perms, fixing
-            usermod -aG "$sudoers" "$admin"
-        fi
-    done < "$admin_path"
+            if [ $unauthorized ]; then
+                prompt 'Delete found users?'
 
-    echo Ensuring standard users are not part of the sudo group
+                if [ $? = 1 ]; then
+                    for user in $unauthorized; do
+                        echo Deleting $user
+                        userdel $user
+                    done
+                fi
+            fi
 
-    while read -r normal; do
-        if id -nG "$normal" | grep -qw "$sudoers"; then
-            echo User $normal has admin perms and shouldn\'t, fixing
-            gpasswd --delete "$normal" "$sudoers"
-        fi
-    done < "$normal_path"
+            echo 'Done!'
+            ;;
 
-    echo Done
-fi
+        # Add missing users
+        '5')
+            reprompt_var 'Path to list of allowed usernames' 'users_file'
+            users_file="$reprompt_value"
+            get_users
+
+            while read -r user; do
+                if ! printf "$users" | grep -wq "$user"; then
+                    echo Adding missing user $user
+                    useradd $user
+                fi
+            done < "$users_file"
+
+            echo 'Added missing users!'
+            ;;
+
+        # Fix administrators
+        '6')
+            reprompt_var 'Path to list of administrators' 'admin_file'
+            admin_file="$reprompt_value"
+            reprompt_var 'Path to list of normal users' 'normal_file'
+            normal_file="$reprompt_value"
+            reprompt_var 'Name of sudoers group (generally `sudo` or `wheel`)' 'sudo_group'
+            sudo_group="$reprompt_value"
+            get_users
+
+            echo 'Ensuring admins are part of the sudo group'
+
+            while read -r admin; do
+                if ! id -nG "$admin" | grep -qw "$sudo_group"; then
+                    echo "User $admin doesn't have admin perms, fixing"
+                    usermod -aG "$sudo_group" "$admin"
+                fi
+            done < "$admin_file"
+
+            echo 'Ensuring standard users are not part of the sudo group'
+
+            while read -r normal; do
+                if id -nG "$normal" | grep -qw "$sudo_group"; then
+                    echo "User $normal has admin perms and shouldn't, fixing"
+                    gpasswd --delete "$normal" "$sudo_group"
+                fi
+            done < "$normal_file"
+
+            echo 'Done fixing administrators!'
+            ;;
+
+        # Exit
+        '99')
+            echo 'Good luck and happy hacking!'
+            exit 0
+            ;;
+
+        # Invalid option
+        *)
+            echo "Unknown option $input"
+            ;;
+    esac
+}
+
+while true; do menu; done
