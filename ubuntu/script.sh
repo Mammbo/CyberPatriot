@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# CyberPatriot Scripts - Scripts and whatnot for use in CyberPatriot.
+# CyberPatriot Scripts - Scripts and checklists for use in CyberPatriot.
 # Copyright (C) 2022  Adam Thompson-Sharpe
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@ function get_users {
     users=$(awk -F: '{if ($3 >= 1000) print $1}' < /etc/passwd)
 }
 
+# prompt and reprompt_var functions from https://gitlab.com/-/snippets/2434448
 function prompt {
     if [ "$2" = 'n' ]; then
         prompt_text="$1 [Y/n]: "
@@ -51,7 +52,8 @@ function prompt {
 }
 
 function reprompt_var {
-    reprompt_text="$1"
+    local reprompt_text="$1"
+    local reprompt_new_val=''
     reprompt_value="${!2}"
 
     if [ $reprompt_value ]; then reprompt_text+=" [$reprompt_value]: "
