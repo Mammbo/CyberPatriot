@@ -11,7 +11,7 @@
 
 ## Not Managed By Script
 
-- [ ] Enable auto-updates
+- [ ] Enable auto-updates **through Ubuntu's UI**
   1. Run the Software Updater
   2. Go to Settings
   3. To be continued (I don't have an Ubuntu machine at the time of writing this)

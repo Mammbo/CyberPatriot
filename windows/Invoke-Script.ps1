@@ -1,4 +1,4 @@
-# CyberPatriot Scripts - Scripts and whatnot for use in CyberPatriot.
+# CyberPatriot Scripts - Scripts and checklists for use in CyberPatriot.
 # Copyright (C) 2022  Adam Thompson-Sharpe
 # 
 # This program is free software: you can redistribute it and/or modify
@@ -146,65 +146,87 @@ Licensed under the GNU General Public License, Version 3.0
 
 Make sure to run this with administrator privileges!'
 
-# Run updates
-$Response = Get-Prompt 'Updates' 'Run updates?' 'Yes', 'No' 0 -StringReturn
-if ($Response -eq 'Yes') {
-    if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
-        $Response = Get-Prompt 'Updates' 'Third-party PSWindowsUpdate module is not installed. Install to run updates programatically?' 'Yes', 'No' 0 -StringReturn
-        if ($Response -eq 'Yes') {
-            Install-Module PSWindowsUpdate
+$Menu = @{
+    # Run updates
+    '1' = {
+        if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
+            $Response = Get-Prompt 'Updates' 'Third-party PSWindowsUpdate module is not installed. Install to run updates programatically?' 'Yes', 'No' 0 -StringReturn
+            if ($Response -eq 'Yes') {
+                Install-Module PSWindowsUpdate
+            }
         }
-    }
-
-    # Run check again in case user decided not to install the package
-    if (Get-Module -ListAvailable -Name PSWindowsUpdate) {
-        Write-Output 'Checking for updates'
-        $Updates = Get-WindowsUpdate
-        if ($Updates) {
-            Write-Output 'Updates found:' $Updates
-            Install-WindowsUpdate | Out-Null
-            Write-Output 'Updates installed'
+    
+        # Run check again in case user decided not to install the package
+        if (Get-Module -ListAvailable -Name PSWindowsUpdate) {
+            Write-Output 'Checking for updates'
+            $Updates = Get-WindowsUpdate
+            if ($Updates) {
+                Write-Output 'Updates found:' $Updates
+                Install-WindowsUpdate | Out-Null
+                Write-Output 'Updates installed'
+            }
+            else {
+                Write-Output 'No updates found'
+            }
         }
         else {
-            Write-Output 'No updates found'
+            Write-Output 'Skipping updates'
         }
     }
-    else {
-        Write-Output 'Skipping updates'
+
+    # Enable automatic updates
+    '2' = {
+        $WUSettings = (New-Object -com "Microsoft.Update.AutoUpdate").Settings
+        $WUSettings.NotificationLevel = 4
+        $WUSettings.save()
+        Write-Output 'Automatic updates enabled'
+    }
+
+    # Set UAC to highest
+    '3' = {
+        $SystemPolicies = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+        Set-ItemProperty -Path $SystemPolicies -Name 'ConsentPromptBehaviorAdmin' -Value 2
+        Set-ItemProperty -Path $SystemPolicies -Name 'PromptOnSecureDesktop' -Value 1
+        Write-Output 'UAC set to highest'
+    }
+
+    # Configure remote desktop
+    '4' = {
+        $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Disable', 'Enable' 0 -StringReturn
+        $TerminalServer = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
+
+        if ($Response -eq 'Disable') {
+            Set-ItemProperty -Path $TerminalServer -Name 'fDenyTSConnections' -Value 1
+            Disable-NetFirewallRule -DisplayGroup 'Remote Desktop'
+            Write-Output 'Remote desktop disabled'
+        }
+        else {
+            Set-ItemProperty -Path $TerminalServer -Name 'fDenyTSConnections' -Value 0
+            Enable-NetFirewallRule -DisplayGroup 'Remote Desktop'
+            Write-Output 'Remote desktop enabled'
+        }
+    }
+
+    # Exit script
+    '99' = {
+        Write-Output 'Good luck and happy hacking!'
+        exit
     }
 }
 
-# Automatic updates
-$Response = Get-Prompt 'Updates' 'Enable automatic updates?' 'Yes', 'No' 0 -StringReturn
-if ($Response -eq 'Yes') {
-    $WUSettings = (New-Object -com "Microsoft.Update.AutoUpdate").Settings
-    $WUSettings.NotificationLevel = 4
-    $WUSettings.save()
-    Write-Output 'Automatic updates enabled'
+function Show-Menu {
+    Write-Output '
+1) Run updates
+2) Enable automatic updates
+3) Set UAC to highest
+4) Configure remote desktop
+
+99) Exit script'
+
+    $Input = Read-Host 'Option'
+
+    if ($Menu[$Input]) { . $Menu[$Input] }
+    else { Write-Output "Unknown option $Input" }
 }
 
-# Configure UAC
-$Response = Get-Prompt 'UAC' 'Set UAC to highest?' 'Yes', 'No' 0 -StringReturn
-if ($Response -eq 'Yes') {
-    $SystemPolicies = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
-    Set-ItemProperty -Path $SystemPolicies -Name 'ConsentPromptBehaviorAdmin' -Value 2
-    Set-ItemProperty -Path $SystemPolicies -Name 'PromptOnSecureDesktop' -Value 1
-    Write-Output 'Done'
-}
-
-# Disable remote desktop
-$Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Disable', 'Enable', 'Do &Nothing' 0 -StringReturn
-$TerminalServer = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
-
-if ($Response -eq 'Disable') {
-    Set-ItemProperty -Path $TerminalServer -Name 'fDenyTSConnections' -Value 1
-    Disable-NetFirewallRule -DisplayGroup 'Remote Desktop'
-    Write-Output 'Remote desktop disabled'
-}
-elseif ($Response -eq 'Enable') {
-    Set-ItemProperty -Path $TerminalServer -Name 'fDenyTSConnections' -Value 0
-    Enable-NetFirewallRule -DisplayGroup 'Remote Desktop'
-    Write-Output 'Remote desktop enabled'
-}
-
-Write-Output 'All done!'
+while ($True) { Show-Menu }
