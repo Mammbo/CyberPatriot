@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 function get_users {
-    users=$(awk -F: '{if ($3 >= 1000) print $1}' < /etc/passwd)
+    # The <65534 condition is to skip the nobody user
+    users=$(awk -F: '{if ($3 >= 1000 && $3 < 65534) print $1}' < /etc/passwd)
 }
 
 # prompt and reprompt_var functions from https://gitlab.com/-/snippets/2434448
@@ -141,7 +142,6 @@ function menu {
             unauthorized=()
 
             for user in $users; do
-                if [ "$user" = 'nobody' ]; then continue; fi
                 if ! grep -Fxq "$user" "$users_file"; then
                     echo Unauthorized user: $user
                     unauthorized+=("$user")
