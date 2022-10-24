@@ -211,16 +211,18 @@ function menu {
 
         # Change all passwords
         '7')
+	    get_users
+            echo 'Changing passwords for the following users:'
+	    echo $users
+	    
             new_pass='a'
             new_pass_confirm='b'
             while ! [ new_pass = new_pass_confirm ]; do
                 read -s -p 'New password: ' new_pass
                 read -s -p 'Confirm: ' new_pass_confirm
 
-                if ! [ new_pass = new_pass_confirm ]; then echo 'Passwords do not match!'
+                if ! [ "$new_pass" = "$new_pass_confirm" ]; then echo 'Passwords do not match!'
                 else
-                    get_users
-                    echo "Changing passwords for: $get_users"
                     for user in $users; do
                         echo "Changing for $user..."
                         printf "$new_pass" | passwd --stdin $user
