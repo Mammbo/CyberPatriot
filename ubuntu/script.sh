@@ -77,9 +77,10 @@ sudo_group='sudo'
 
 function menu {
     echo
-    echo '1) Run updates                4) Find and remove unauthorized users'
-    echo '2) Enable & Configure UFW     5) Add missing users'
-    echo '3) Enable & configure sshd    6) Fix administrators'
+    echo '1) Run updates                        5) Add missing users'
+    echo '2) Enable & Configure UFW             6) Fix administrators'
+    echo '3) Enable & configure sshd            7) Change all passwords'
+    echo '4) Find/remove unauthorized users'
     echo
     echo '99) Exit script'
     read -r -p '> ' input
@@ -206,6 +207,28 @@ function menu {
             done < "$normal_file"
 
             echo 'Done fixing administrators!'
+            ;;
+
+        # Change all passwords
+        '7')
+            new_pass='a'
+            new_pass_confirm='b'
+            while ! [ new_pass = new_pass_confirm ]; do
+                read -s -p 'New password: ' new_pass
+                read -s -p 'Confirm: ' new_pass_confirm
+
+                if ! [ new_pass = new_pass_confirm ]; then echo 'Passwords do not match!'
+                else
+                    get_users
+                    echo "Changing passwords for: $get_users"
+                    for user in $users; do
+                        echo "Changing for $user..."
+                        printf "$new_pass" | passwd --stdin $user
+                    done
+                fi
+            done
+
+            echo 'Done changing passwords!'
             ;;
 
         # Exit

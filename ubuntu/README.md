@@ -8,6 +8,7 @@
 - [x] Remove unauthorized users
 - [x] Add missing users
 - [x] Add/remove users from sudo group
+- [x] Change all passwords
 
 ## Not Managed By Script
 
@@ -16,7 +17,6 @@
   2. Go to Settings
   3. To be continued (I don't have an Ubuntu machine at the time of writing this)
 - [ ] Add missing groups
-- [ ] Change insecure passwords
 - [ ] Remove prohibited/unwanted software
 - [ ] Lock down browser  
        If the browser is Firefox, basically just set every setting
