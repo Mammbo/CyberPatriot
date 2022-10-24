@@ -2,12 +2,12 @@
 
 ## Managed By Script
 
-- [ ] Run updates
-- [ ] Enable & configure UFW
-- [ ] Configure sshd (enable, disable root login, etc.)
-- [ ] Remove unauthorized users
-- [ ] Add missing users
-- [ ] Add/remove users from sudo group
+- [x] Run updates
+- [x] Enable & configure UFW
+- [x] Configure sshd (enable, disable root login, etc.)
+- [x] Remove unauthorized users
+- [x] Add missing users
+- [x] Add/remove users from sudo group
 
 ## Not Managed By Script
 

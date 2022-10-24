@@ -10,7 +10,7 @@ Currently applies to both Windows 10 and Windows Server.
 
 ## Managed By Script
 
-- [ ] Update Windows
-- [ ] Enable automatic updates
-- [ ] Set UAC level to max
-- [ ] Disable/enable remote desktop
+- [x] Update Windows
+- [x] Enable automatic updates
+- [x] Set UAC level to max
+- [x] Disable/enable remote desktop
