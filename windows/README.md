@@ -14,3 +14,16 @@ Currently applies to both Windows 10 and Windows Server.
 - [x] Enable automatic updates
 - [x] Set UAC level to max
 - [x] Disable/enable remote desktop
+
+## Not Managed By Script
+
+- [ ] Remove unauthorized users
+- [ ] Add missing users
+- [ ] Add/remove users from Administrator group
+- [ ] Change all passwords
+- [ ] Add missing groups
+- [ ] Remove prohibited/unwanted software
+- [ ] Lock down browser  
+       If the browser is Firefox, basically just set every setting
+      to the most strict in the security settings
+- [ ] Install recommended programs
