@@ -215,9 +215,9 @@ function menu {
             echo 'Changing passwords for the following users:'
 	    echo $users
 	    
-            new_pass='a'
-            new_pass_confirm='b'
-            while ! [ new_pass = new_pass_confirm ]; do
+            new_pass=''
+            new_pass_confirm=''
+            while ! [ "$new_pass" = "$new_pass_confirm" ] || [ "$new_pass" = '' ]; do
                 read -s -p 'New password: ' new_pass
                 read -s -p 'Confirm: ' new_pass_confirm
 
