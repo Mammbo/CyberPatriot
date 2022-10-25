@@ -78,10 +78,12 @@ sudo_group='sudo'
 
 function menu {
     echo
-    echo '1) Run updates                        5) Add missing users'
-    echo '2) Enable & Configure UFW             6) Fix administrators'
-    echo '3) Enable & configure sshd            7) Change all passwords'
-    echo '4) Find/remove unauthorized users     8) Lock account'
+    echo '1) Run updates                        7) Change all passwords'
+    echo '2) Enable & Configure UFW             8) Lock account'
+    echo '3) Enable & configure sshd            9) Add new group'
+    echo '4) Find/remove unauthorized users'
+    echo '5) Add missing users'
+    echo '6) Fix administrators'
     echo
     echo '99) Exit script'
     read -r -p '> ' input
@@ -239,6 +241,24 @@ function menu {
             if [ "$lock_account" = '' ]; then lock_account='root'; fi
             usermod -L $lock_account
             echo "Locked $lock_account!"
+            ;;
+
+        # Add group
+        '9')
+            read -r -p 'New group to add: ' new_group
+            groupadd $new_group
+            
+            prompt 'Add members to this group?' 'y'
+            if [ $? = 1 ]; then
+                read -r -p 'Users to add (space-separated): ' new_group_users
+
+                for user in $new_group_users; do
+                    usermod -aG $new_group $user
+                    echo "Added $user to $new_group"
+                done
+            fi
+
+            echo 'Done creating new group!'
             ;;
 
         # Exit

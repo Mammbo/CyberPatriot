@@ -10,6 +10,7 @@
 - [x] Add/remove users from sudo group
 - [x] Change all passwords
 - [x] Lock root account
+- [x] Add missing groups
 
 ## Not Managed By Script
 
@@ -17,7 +18,6 @@
   1. Run the Software Updater
   2. Go to Settings
   3. To be continued (I don't have an Ubuntu machine at the time of writing this)
-- [ ] Add missing groups
 - [ ] Remove prohibited/unwanted software
 - [ ] Lock down browser  
        If the browser is Firefox, basically just set every setting
