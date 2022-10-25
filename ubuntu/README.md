@@ -9,6 +9,7 @@
 - [x] Add missing users
 - [x] Add/remove users from sudo group
 - [x] Change all passwords
+- [x] Lock root account
 
 ## Not Managed By Script
 

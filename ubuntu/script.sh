@@ -81,7 +81,7 @@ function menu {
     echo '1) Run updates                        5) Add missing users'
     echo '2) Enable & Configure UFW             6) Fix administrators'
     echo '3) Enable & configure sshd            7) Change all passwords'
-    echo '4) Find/remove unauthorized users'
+    echo '4) Find/remove unauthorized users     8) Lock account'
     echo
     echo '99) Exit script'
     read -r -p '> ' input
@@ -231,6 +231,14 @@ function menu {
             done
 
             echo 'Done changing passwords!'
+            ;;
+
+        # Lock account
+        '8')
+            read -r -p 'Account to lock [root]: ' lock_account
+            if [ "$lock_account" = '' ]; then lock_account='root'; fi
+            usermod -L $lock_account
+            echo "Locked $lock_account!"
             ;;
 
         # Exit
