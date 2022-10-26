@@ -131,9 +131,9 @@ function menu {
     echo '99) Exit script'
     read -r -p '> ' input
 
-    case "$input" in
+    case $(($input + 0)) in
         # Run updates
-        '1')
+        1)
             prompt 'Reboot after updates? Recommended if DE crashes during updates' 'n'
             apt-get update
             apt-get upgrade -y
@@ -142,7 +142,7 @@ function menu {
             ;;
 
         # Set up UFW
-        '2')
+        2)
             apt-get install ufw -y
 
             rule='default deny'
@@ -156,7 +156,7 @@ function menu {
             ;;
 
         # Set up sshd
-        '3')
+        3)
             apt-get install openssh-server -y
 
             echo 'Enabling & starting service'
@@ -177,7 +177,7 @@ function menu {
             ;;
 
         # Find and remove unauthorized users
-        '4')
+        4)
             reprompt_var 'Path to list of allowed usernames' 'users_file'
             users_file="$reprompt_value"
             get_users
@@ -206,7 +206,7 @@ function menu {
             ;;
 
         # Add missing users
-        '5')
+        5)
             reprompt_var 'Path to list of allowed usernames' 'users_file'
             users_file="$reprompt_value"
             get_users
@@ -222,7 +222,7 @@ function menu {
             ;;
 
         # Fix administrators
-        '6')
+        6)
             reprompt_var 'Path to list of administrators' 'admin_file'
             admin_file="$reprompt_value"
             reprompt_var 'Path to list of normal users' 'normal_file'
@@ -253,7 +253,7 @@ function menu {
             ;;
 
         # Change all passwords
-        '7')
+        7)
 	    get_users
             echo 'Changing passwords for the following users:'
 	    echo $users
@@ -277,7 +277,7 @@ function menu {
             ;;
 
         # Lock account
-        '8')
+        8)
             read -r -p 'Account to lock [root]: ' lock_account
             if [ "$lock_account" = '' ]; then lock_account='root'; fi
             usermod -L $lock_account
@@ -285,7 +285,7 @@ function menu {
             ;;
 
         # Add group
-        '9')
+        9)
             read -r -p 'New group to add: ' new_group
             groupadd $new_group
             
@@ -303,7 +303,7 @@ function menu {
             ;;
 
         # Disable guest
-        '10')
+        10)
             if [ -f "$lightdm_conf" ]; then
                 if grep -q 'allow-guest=false' "$lightdm_conf"; then
                     echo 'Guest account already disabled!'
@@ -317,7 +317,7 @@ function menu {
             ;;
 
         # Set password expiry
-        '11')
+        11)
             reprompt_var 'Max password age' pass_max
             reprompt_var 'Minimum password age' pass_min
             reprompt_var 'Days before password expiry warning' pass_warn
@@ -337,7 +337,7 @@ function menu {
             ;;
 
         # Enable automatic updates
-        '12')
+        12)
             sed_or_append "$apt_check_interval_exp" 'APT::Periodic::Update-Package-Lists "1";' "$apt_periodic_conf"
             echo 'Enabled daily update checks'
 
@@ -355,7 +355,7 @@ function menu {
             echo 'Done configuring automatic updates!'
             ;;
 
-        '13')
+        13)
             # The lack of the -y flag here is deliberate to make sure the user actually checks what's being removed
             apt-get remove --purge $bad_software
 
@@ -364,7 +364,7 @@ function menu {
             ;;
 
         # Exit
-        '99')
+        99)
             echo 'Good luck and happy hacking!'
             exit 0
             ;;
