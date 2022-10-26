@@ -77,6 +77,9 @@ sshd_conf='/etc/ssh/sshd_config.d/mbh.conf'
 lightdm_conf='/etc/lightdm/lightdm.conf'
 sudo_group='sudo'
 
+# Regular expressions
+# The caret (^) at the beginning of some expressions is to make sure that commented-out lines
+# aren't accidentally matched instead of the actual config option
 pass_max_exp='^PASS_MAX_DAYS\s+[0-9]+'
 pass_min_exp='^PASS_MIN_DAYS\s+[0-9]+'
 pass_min_exp='^PASS_WARN_AGE\s+[0-9]+'
