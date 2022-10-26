@@ -65,6 +65,17 @@ function reprompt_var {
     if [ "$reprompt_new_val" ]; then reprompt_value="$reprompt_new_val"; fi
 }
 
+# Update a config option in-place or append it to the file
+# if not already defined
+# Parameters are pattern to match, replace text, file to check
+function sed_or_append {
+    if grep -Eq "$1" "$3"; then
+        sed -Ei "s\`$1\`$2\`g" "$3"
+    else
+        echo "$2" >> "$3"
+    fi
+}
+
 echo 'Ubuntu CyberPatriot Script'
 echo
 echo 'CyberPatriot Scripts  Copyright (C) 2022  Adam Thompson-Sharpe'
@@ -148,21 +159,11 @@ function menu {
 
             prompt 'Prohibit root login?' 'y'
             if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
-
-            if grep -Eq "$ssh_root_exp" "$sshd_conf"; then
-                sed -Ei "s\`$ssh_root_exp\`PermitRootLogin $yes_no\`g" "$sshd_conf"
-            else
-                echo "PermitRootLogin $yes_no" >> "$sshd_conf"
-            fi
+            sed_or_append "$ssh_root_exp" "PermitRootLogin $yes_no" "$sshd_conf"
 
             prompt 'Prohibit empty passwords?' 'y'
             if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
-
-            if grep -Eq "$ssh_empty_pass_exp" "$sshd_conf"; then
-                sed -Ei "s\`$ssh_empty_pass_exp\`PermitEmptyPasswords $yes_no\`g" "$sshd_conf"
-            else
-                echo "PermitEmptyPasswords $yes_no" >> "$sshd_conf"
-            fi
+            sed_or_append "$ssh_empty_pass_exp" "PermitEmptyPasswords $yes_no" "$sshd_conf"
 
             echo 'Restarting service'
             systemctl restart sshd
@@ -317,25 +318,13 @@ function menu {
 
             # Replace current values with new ones if possible,
             # otherwise append to end of file
-            if grep -Eq "$pass_max_exp" '/etc/login.defs'; then
-                sed -Ei "s\`$pass_max_exp\`PASS_MAX_DAYS	$pass_max\`g" '/etc/login.defs'
-            else
-                echo "PASS_MAX_DAYS	$pass_max" >> '/etc/login.defs'
-            fi
+            sed_or_append "$pass_max_exp" "PASS_MAX_DAYS	$pass_max" '/etc/login.defs'
             echo 'Set max age'
 
-            if grep -Eq "$pass_min_exp" '/etc/login.defs'; then
-                sed -Ei "s\`$pass_min_exp\`PASS_MIN_DAYS	$pass_min\`g" '/etc/login.defs'
-            else
-                echo "PASS_MIN_DAYS	$pass_min" >> '/etc/login.defs'
-            fi
+            sed_or_append "$pass_min_exp" "PASS_MIN_DAYS	$pass_min" '/etc/login.defs'
             echo 'Set minimum age'
 
-            if grep -Eq "$pass_warn_exp" '/etc/login.defs'; then
-                sed -Ei "s\`$pass_warn_exp\`PASS_WARN_AGE	$pass_warn\`g" '/etc/login.defs'
-            else
-                echo "PASS_WARN_AGE	$pass_warn" >> '/etc/login.defs'
-            fi
+            sed_or_append "$pass_warn_exp" "PASS_WARN_AGE	$pass_warn" '/etc/login.defs'
             echo 'Set age warning'
 
             echo 'Done setting password expiry!'
@@ -347,32 +336,16 @@ function menu {
             apt_autoclean_interval_exp
             apt_unattended_exp
 
-            if grep -Eq "$apt_check_interval_exp" "$apt_periodic_conf"; then
-                sed -Ei "s\`$apt_check_interval_exp\`APT::Periodic::Update-Package-Lists \"1\";\`g" "$apt_periodic_conf"
-            else
-                echo 'APT::Periodic::Update-Package-Lists "1";' >> "$apt_periodic_conf"
-            fi
+            sed_or_append "$apt_check_interval_exp" 'APT::Periodic::Update-Package-Lists "1";' "$apt_periodic_conf"
             echo 'Enabled daily update checks'
 
-            if grep -Eq "$apt_download_upgradeable_exp" "$apt_periodic_conf"; then
-                sed -Ei "s\`$apt_download_upgradeable_exp\`APT::Periodic::Download-Upgradeable-Packages \"1\";\`g" "$apt_periodic_conf"
-            else
-                echo 'APT::Periodic::Download-Upgradeable-Packages "1";' >> "$apt_periodic_conf"
-            fi
+            sed_or_append "$apt_download_upgradeable_exp" 'APT::Periodic::Download-Upgradeable-Packages "1";' "$apt_periodic_conf"
             echo 'Enabled auto-downloading upgradeable packages'
 
-            if grep -Eq "$apt_autoclean_interval_exp" "$apt_periodic_conf"; then
-                sed -Ei "s\`$apt_autoclean_interval_exp\`APT::Periodic::AutocleanInterval \"1\";\`g" "$apt_periodic_conf"
-            else
-                echo 'APT::Periodic::AutocleanInterval "1";' >> "$apt_periodic_conf"
-            fi
+            sed_or_append "$apt_autoclean_interval_exp" 'APT::Periodic::AutocleanInterval "1";' "$apt_periodic_conf"
             echo 'Enabled daily package cleaning'
 
-            if grep -Eq "$apt_unattended_exp" "$apt_periodic_conf"; then
-                sed -Ei "s\`$apt_unattended_exp\`APT::Periodic::Unattended-Upgrade \"1\";\`g" "$apt_periodic_conf"
-            else
-                echo 'APT::Periodic::Unattended-Upgrade "1";' >> "$apt_periodic_conf"
-            fi
+            sed_or_append "$apt_unattended_exp" 'APT::Periodic::Unattended-Upgrade "1";' "$apt_periodic_conf"
             echo 'Enabled unattended upgrades'
 
             cp -f "$apt_periodic_conf" "$apt_autoupgrade_conf"
