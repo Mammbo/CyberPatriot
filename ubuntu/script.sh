@@ -73,7 +73,7 @@ echo
 echo 'Make sure to run this as root!'
 echo "Current user: $(whoami)"
 
-sshd_conf='/etc/ssh/sshd_config.d/mbh.conf'
+sshd_conf='/etc/ssh/sshd_config'
 lightdm_conf='/etc/lightdm/lightdm.conf'
 sudo_group='sudo'
 
@@ -83,6 +83,9 @@ sudo_group='sudo'
 pass_max_exp='^PASS_MAX_DAYS\s+[0-9]+'
 pass_min_exp='^PASS_MIN_DAYS\s+[0-9]+'
 pass_min_exp='^PASS_WARN_AGE\s+[0-9]+'
+
+ssh_root_exp='^PermitRootLogin\s+(yes|no)'
+ssh_empty_pass_exp='^PermitEmptyPasswords\s+(yes|no)'
 
 pass_max='90'
 pass_min='7'
@@ -134,15 +137,25 @@ function menu {
 
             rm -f "$sshd_conf"
 
-            prompt 'Permit root logins?' 'y'
-            if [ $? = 1 ]; then echo 'PermitRootLogin no' >> "$sshd_conf"
-            else echo 'PermitRootLogin yes' >> "$sshd_conf"; fi
+            prompt 'Permit root login?' 'y'
+            if [ $? = 1 ]; then yes_no='yes'; else yes_no='no'; fi
 
-            prompt 'Permit empty passwords?' 'y'
-            if [ $? = 1 ]; then echo 'PermitEmptyPasswords no' >> "$sshd_conf"
-            else echo 'PermitEmptyPasswords yes' >> "$sshd_conf"; fi
+            if grep -Eq "$ssh_root_exp"; then
+                sed -i "s\`$ssh_root_exp\`PermitRootLogin $yes_no\`g" $sshd_conf
+            else
+                echo "PermitRootLogin $yes_no" >> $sshd_conf
+            fi
 
-            echo Restarting service
+            prompt 'Prohibit empty passwords?' 'y'
+            if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
+
+            if grep -Eq "$ssh_empty_pass_exp"; then
+                sed -i "s\`$ssh_empty_pass_exp\`PermitEmptyPasswords $yes_no\`g" $sshd_conf
+            else
+                echo "PermitEmptyPasswords $yes_no" >> $sshd_conf
+            fi
+
+            echo 'Restarting service'
             systemctl restart sshd
             echo 'Done configuring!'
             ;;
