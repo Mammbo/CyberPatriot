@@ -25,3 +25,8 @@
        If the browser is Firefox, basically just set every setting
       to the most strict in the security settings
 - [ ] Install recommended programs
+- [ ] Configure PAM settings
+  - Set minimum password length
+  - Enforce password complexity
+  - Configure account lockout
+  - All done through `/etc/pam.d/common-password` or `/etc/pam.d/common-auth`
