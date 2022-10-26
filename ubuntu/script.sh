@@ -315,21 +315,21 @@ function menu {
             # Replace current values with new ones if possible,
             # otherwise append to end of file
             if grep -Eq "$pass_max_exp" '/etc/login.defs'; then
-                sed -i "s\`$pass_max_exp\`PASS_MAX_DAYS	$pass_max\`g" '/etc/login.defs'
+                sed -Ei "s\`$pass_max_exp\`PASS_MAX_DAYS	$pass_max\`g" '/etc/login.defs'
             else
                 echo "PASS_MAX_DAYS	$pass_max" >> '/etc/login.defs'
             fi
             echo 'Set max age'
 
             if grep -Eq "$pass_min_exp" '/etc/login.defs'; then
-                sed -i "s\`$pass_min_exp\`PASS_MIN_DAYS	$pass_min\`g" '/etc/login.defs'
+                sed -Ei "s\`$pass_min_exp\`PASS_MIN_DAYS	$pass_min\`g" '/etc/login.defs'
             else
                 echo "PASS_MIN_DAYS	$pass_min" >> '/etc/login.defs'
             fi
             echo 'Set minimum age'
 
             if grep -Eq "$pass_warn_exp" '/etc/login.defs'; then
-                sed -i "s\`$pass_warn_exp\`PASS_WARN_AGE	$pass_warn\`g" '/etc/login.defs'
+                sed -Ei "s\`$pass_warn_exp\`PASS_WARN_AGE	$pass_warn\`g" '/etc/login.defs'
             else
                 echo "PASS_WARN_AGE	$pass_warn" >> '/etc/login.defs'
             fi
@@ -341,7 +341,7 @@ function menu {
         # Enable daily update checks
         '12')
             if grep -Eq "$apt_check_interval_exp" "$apt_periodic_conf"; then
-                sed -i "s\`$apt_check_interval_exp\`APT::Periodic::Update-Package-Lists \"1\";\`g" "$apt_periodic_conf"
+                sed -Ei "s\`$apt_check_interval_exp\`APT::Periodic::Update-Package-Lists \"1\";\`g" "$apt_periodic_conf"
             else
                 echo 'APT::Periodic::Update-Package-Lists "1";' >> "$apt_periodic_conf"
             fi
