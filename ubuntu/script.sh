@@ -75,17 +75,25 @@ echo "Current user: $(whoami)"
 
 sshd_conf='/etc/ssh/sshd_config'
 lightdm_conf='/etc/lightdm/lightdm.conf'
+apt_periodic_conf='/etc/apt/apt.conf.d/10periodic'
+apt_autoupgrade_conf='/etc/apt/apt.conf.d/20auto-upgrades'
 sudo_group='sudo'
 
-# Regular expressions
+### Regular expressions ###
 # The caret (^) at the beginning of some expressions is to make sure that commented-out lines
 # aren't accidentally matched instead of the actual config option
+
+# Password expiry settings
 pass_max_exp='^PASS_MAX_DAYS\s+[0-9]+'
 pass_min_exp='^PASS_MIN_DAYS\s+[0-9]+'
 pass_min_exp='^PASS_WARN_AGE\s+[0-9]+'
 
+# sshd settings
 ssh_root_exp='^PermitRootLogin\s+(yes|no)'
 ssh_empty_pass_exp='^PermitEmptyPasswords\s+(yes|no)'
+
+# Apt settings
+apt_check_interval_exp='^APT::Periodic::Update-Package-Lists\s+"[0-9]+";'
 
 pass_max='90'
 pass_min='7'
@@ -98,7 +106,7 @@ function menu {
     echo '3) Enable & configure sshd             9) Add new group'
     echo '4) Find/remove unauthorized users     10) Disable guest account'
     echo '5) Add missing users                  11) Set password expiry'
-    echo '6) Fix administrators'
+    echo '6) Fix administrators                 12) Enable daily update checks'
     echo
     echo '99) Exit script'
     read -r -p '> ' input
@@ -328,6 +336,19 @@ function menu {
             echo 'Set age warning'
 
             echo 'Done setting password expiry!'
+            ;;
+
+        # Enable daily update checks
+        '12')
+            if grep -Eq "$apt_check_interval_exp" "$apt_periodic_conf"; then
+                sed -i "s\`$apt_check_interval_exp\`APT::Periodic::Update-Package-Lists \"1\";\`g" "$apt_periodic_conf"
+            else
+                echo 'APT::Periodic::Update-Package-Lists "1";' >> "$apt_periodic_conf"
+            fi
+
+            cp -f "$apt_periodic_conf" "$apt_autoupgrade_conf"
+
+            echo 'Daily update checks enabled!'
             ;;
 
         # Exit
