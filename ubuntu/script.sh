@@ -74,15 +74,24 @@ echo 'Make sure to run this as root!'
 echo "Current user: $(whoami)"
 
 sshd_conf='/etc/ssh/sshd_config.d/mbh.conf'
+lightdm_conf='/etc/lightdm/lightdm.conf'
 sudo_group='sudo'
+
+pass_max_exp='^PASS_MAX_DAYS\s+[0-9]+'
+pass_min_exp='^PASS_MIN_DAYS\s+[0-9]+'
+pass_min_exp='^PASS_WARN_AGE\s+[0-9]+'
+
+pass_max='90'
+pass_min='7'
+pass_warn='7'
 
 function menu {
     echo
-    echo '1) Run updates                        7) Change all passwords'
-    echo '2) Enable & Configure UFW             8) Lock account'
-    echo '3) Enable & configure sshd            9) Add new group'
-    echo '4) Find/remove unauthorized users'
-    echo '5) Add missing users'
+    echo '1) Run updates                         7) Change all passwords'
+    echo '2) Enable & Configure UFW              8) Lock account'
+    echo '3) Enable & configure sshd             9) Add new group'
+    echo '4) Find/remove unauthorized users     10) Disable guest account'
+    echo '5) Add missing users                  11) Set password expiry'
     echo '6) Fix administrators'
     echo
     echo '99) Exit script'
@@ -259,6 +268,52 @@ function menu {
             fi
 
             echo 'Done creating new group!'
+            ;;
+
+        # Disable guest
+        '10')
+            if [ -f "$lightdm_conf" ]; then
+                if grep -q 'allow-guest=false' "$lightdm_conf"; then
+                    echo 'Guest account already disabled!'
+                else
+                    echo 'allow-guest=false' >> "$lightdm_conf"
+                    echo 'Disabled guest account!'
+                fi
+            else
+                echo "lightdm config file not found at $lightdm_conf, guest account probably doesn't exist"
+            fi
+            ;;
+
+        # Set password expiry
+        '11')
+            reprompt_var 'Max password age' pass_max
+            reprompt_var 'Minimum password age' pass_min
+            reprompt_var 'Days before password expiry warning' pass_warn
+
+            # Replace current values with new ones if possible,
+            # otherwise append to end of file
+            if grep -Eq "$pass_max_exp"; then
+                sed -i "s\`$pass_max_exp\`PASS_MAX_DAYS	$pass_max\`g" '/etc/login.defs'
+            else
+                echo "PASS_MAX_DAYS	$pass_max" >> '/etc/login.defs'
+            fi
+            echo 'Set max age'
+
+            if grep -Eq "$pass_min_exp"; then
+                sed -i "s\`$pass_min_exp\`PASS_MIN_DAYS	$pass_min\`g" '/etc/login.defs'
+            else
+                echo "PASS_MIN_DAYS	$pass_min" >> '/etc/login.defs'
+            fi
+            echo 'Set minimum age'
+
+            if grep -Eq "$pass_warn_exp"; then
+                sed -i "s\`$pass_warn_exp\`PASS_WARN_AGE	$pass_warn\`g" '/etc/login.defs'
+            else
+                echo "PASS_WARN_AGE	$pass_warn" >> '/etc/login.defs'
+            fi
+            echo 'Set age warning'
+
+            echo 'Done setting password expiry!'
             ;;
 
         # Exit

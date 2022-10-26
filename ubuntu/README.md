@@ -11,6 +11,8 @@
 - [x] Change all passwords
 - [x] Lock root account
 - [x] Add missing groups
+- [x] Disable guest account
+- [x] Configure password expiry
 
 ## Not Managed By Script
 
