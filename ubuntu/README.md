@@ -13,7 +13,7 @@
 - [x] Add missing groups
 - [x] Disable guest account
 - [x] Configure password expiry
-- [x] Enable automatic update checking through APT
+- [x] Enable automatic updates through APT
 
 ## Not Managed By Script
 

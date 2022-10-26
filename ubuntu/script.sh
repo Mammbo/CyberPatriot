@@ -94,6 +94,9 @@ ssh_empty_pass_exp='^PermitEmptyPasswords\s+(yes|no)'
 
 # Apt settings
 apt_check_interval_exp='^APT::Periodic::Update-Package-Lists\s+"[0-9]+";'
+apt_download_upgradeable_exp='^APT::Periodic::Download-Upgradeable-Packages\s+"[0-9]+";'
+apt_autoclean_interval_exp='^APT::Periodic::AutocleanInterval\s+"[0-9]+";'
+apt_unattended_exp='^APT::Periodic::Unattended-Upgrade\s+"[0-9]+";'
 
 pass_max='90'
 pass_min='7'
@@ -106,7 +109,7 @@ function menu {
     echo '3) Enable & configure sshd             9) Add new group'
     echo '4) Find/remove unauthorized users     10) Disable guest account'
     echo '5) Add missing users                  11) Set password expiry'
-    echo '6) Fix administrators                 12) Enable daily update checks'
+    echo '6) Fix administrators                 12) Enable automatic updates'
     echo
     echo '99) Exit script'
     read -r -p '> ' input
@@ -338,17 +341,43 @@ function menu {
             echo 'Done setting password expiry!'
             ;;
 
-        # Enable daily update checks
+        # Enable automatic updates
         '12')
+            apt_download_upgradeable_exp
+            apt_autoclean_interval_exp
+            apt_unattended_exp
+
             if grep -Eq "$apt_check_interval_exp" "$apt_periodic_conf"; then
                 sed -Ei "s\`$apt_check_interval_exp\`APT::Periodic::Update-Package-Lists \"1\";\`g" "$apt_periodic_conf"
             else
                 echo 'APT::Periodic::Update-Package-Lists "1";' >> "$apt_periodic_conf"
             fi
+            echo 'Enabled daily update checks'
+
+            if grep -Eq "$apt_download_upgradeable_exp" "$apt_periodic_conf"; then
+                sed -Ei "s\`$apt_download_upgradeable_exp\`APT::Periodic::Download-Upgradeable-Packages \"1\";\`g" "$apt_periodic_conf"
+            else
+                echo 'APT::Periodic::Download-Upgradeable-Packages "1";' >> "$apt_periodic_conf"
+            fi
+            echo 'Enabled auto-downloading upgradeable packages'
+
+            if grep -Eq "$apt_autoclean_interval_exp" "$apt_periodic_conf"; then
+                sed -Ei "s\`$apt_autoclean_interval_exp\`APT::Periodic::AutocleanInterval \"1\";\`g" "$apt_periodic_conf"
+            else
+                echo 'APT::Periodic::AutocleanInterval "1";' >> "$apt_periodic_conf"
+            fi
+            echo 'Enabled daily package cleaning'
+
+            if grep -Eq "$apt_unattended_exp" "$apt_periodic_conf"; then
+                sed -Ei "s\`$apt_unattended_exp\`APT::Periodic::Unattended-Upgrade \"1\";\`g" "$apt_periodic_conf"
+            else
+                echo 'APT::Periodic::Unattended-Upgrade "1";' >> "$apt_periodic_conf"
+            fi
+            echo 'Enabled unattended upgrades'
 
             cp -f "$apt_periodic_conf" "$apt_autoupgrade_conf"
 
-            echo 'Daily update checks enabled!'
+            echo 'Done configuring automatic updates!'
             ;;
 
         # Exit
