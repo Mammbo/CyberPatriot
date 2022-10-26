@@ -137,14 +137,14 @@ function menu {
 
         # Set up sshd
         '3')
-            apt-get install openssh -y
+            apt-get install openssh-server -y
 
             echo 'Enabling & starting service'
-            systemctl enable sshd
-            systemctl start sshd
+            systemctl enable ssh
+            systemctl start ssh
 
-            prompt 'Permit root login?' 'y'
-            if [ $? = 1 ]; then yes_no='yes'; else yes_no='no'; fi
+            prompt 'Prohibit root login?' 'y'
+            if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
 
             if grep -Eq "$ssh_root_exp" "$sshd_conf"; then
                 sed -Ei "s\`$ssh_root_exp\`PermitRootLogin $yes_no\`g" "$sshd_conf"
