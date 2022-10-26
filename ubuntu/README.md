@@ -14,12 +14,13 @@
 - [x] Disable guest account
 - [x] Configure password expiry
 - [x] Enable automatic updates through APT
+- [x] Remove prohibited/unwanted software  
+      **You should still check for suspicious software yourself**
 
 ## Not Managed By Script
 
-- [ ] Remove prohibited/unwanted software
 - [ ] Lock down browser  
-       If the browser is Firefox, basically just set every setting
+      If the browser is Firefox, basically just set every setting
       to the most strict in the security settings
 - [ ] Install recommended programs
 - [ ] Configure PAM settings

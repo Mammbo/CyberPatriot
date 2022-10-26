@@ -88,7 +88,10 @@ sshd_conf='/etc/ssh/sshd_config'
 lightdm_conf='/etc/lightdm/lightdm.conf'
 apt_periodic_conf='/etc/apt/apt.conf.d/10periodic'
 apt_autoupgrade_conf='/etc/apt/apt.conf.d/20auto-upgrades'
+
 sudo_group='sudo'
+
+bad_software='aircrack-ng deluge hashcat hydra john kismet nmap openvpn qbittorrent samba telnet wireguard zenmap'
 
 ### Regular expressions ###
 # The caret (^) at the beginning of some expressions is to make sure that commented-out lines
@@ -115,12 +118,15 @@ pass_warn='7'
 
 function menu {
     echo
-    echo '1) Run updates                         7) Change all passwords'
-    echo '2) Enable & Configure UFW              8) Lock account'
-    echo '3) Enable & configure sshd             9) Add new group'
-    echo '4) Find/remove unauthorized users     10) Disable guest account'
-    echo '5) Add missing users                  11) Set password expiry'
-    echo '6) Fix administrators                 12) Enable automatic updates'
+    echo '01) Run updates                       10) Disable guest account'
+    echo '02) Enable & Configure UFW            11) Set password expiry'
+    echo '03) Enable & configure sshd           12) Enable automatic updates'
+    echo '04) Find/remove unauthorized users    13) Remove prohibited software'
+    echo '05) Add missing users'
+    echo '06) Fix administrators'
+    echo '07) Change all passwords'
+    echo '08) Lock account'
+    echo '09) Add new group'
     echo
     echo '99) Exit script'
     read -r -p '> ' input
@@ -347,6 +353,14 @@ function menu {
             cp -f "$apt_periodic_conf" "$apt_autoupgrade_conf"
 
             echo 'Done configuring automatic updates!'
+            ;;
+
+        '13')
+            echo "To be uninstalled: $bad_software"
+            apt-get remove --purge $bad_software
+
+            echo 'Prohibited software uninstalled!'
+            echo 'Make sure that nothing else suspicious-looking is still on the desktop or elsewhere'
             ;;
 
         # Exit
