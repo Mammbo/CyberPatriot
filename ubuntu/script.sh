@@ -21,7 +21,7 @@ function get_users {
 
 # prompt and reprompt_var functions from https://gitlab.com/-/snippets/2434448
 function prompt {
-    if [ "$2" = 'n' ]; then
+    if [ "$2" = 'y' ]; then
         prompt_text="$1 [Y/n]: "
     elif [ "$2" = 'n' ]; then
         prompt_text="$1 [y/N]: "
