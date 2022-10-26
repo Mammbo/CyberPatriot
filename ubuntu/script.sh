@@ -135,24 +135,22 @@ function menu {
             systemctl enable sshd
             systemctl start sshd
 
-            rm -f "$sshd_conf"
-
             prompt 'Permit root login?' 'y'
             if [ $? = 1 ]; then yes_no='yes'; else yes_no='no'; fi
 
-            if grep -Eq "$ssh_root_exp"; then
-                sed -i "s\`$ssh_root_exp\`PermitRootLogin $yes_no\`g" $sshd_conf
+            if grep -Eq "$ssh_root_exp" "$sshd_conf"; then
+                sed -Ei "s\`$ssh_root_exp\`PermitRootLogin $yes_no\`g" "$sshd_conf"
             else
-                echo "PermitRootLogin $yes_no" >> $sshd_conf
+                echo "PermitRootLogin $yes_no" >> "$sshd_conf"
             fi
 
             prompt 'Prohibit empty passwords?' 'y'
             if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
 
-            if grep -Eq "$ssh_empty_pass_exp"; then
-                sed -i "s\`$ssh_empty_pass_exp\`PermitEmptyPasswords $yes_no\`g" $sshd_conf
+            if grep -Eq "$ssh_empty_pass_exp" "$sshd_conf"; then
+                sed -Ei "s\`$ssh_empty_pass_exp\`PermitEmptyPasswords $yes_no\`g" "$sshd_conf"
             else
-                echo "PermitEmptyPasswords $yes_no" >> $sshd_conf
+                echo "PermitEmptyPasswords $yes_no" >> "$sshd_conf"
             fi
 
             echo 'Restarting service'
