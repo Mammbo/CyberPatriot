@@ -100,7 +100,7 @@ bad_software='aircrack-ng deluge hashcat hydra john kismet nmap openvpn qbittorr
 # Password expiry settings
 pass_max_exp='^PASS_MAX_DAYS\s+[0-9]+'
 pass_min_exp='^PASS_MIN_DAYS\s+[0-9]+'
-pass_min_exp='^PASS_WARN_AGE\s+[0-9]+'
+pass_warn_exp='^PASS_WARN_AGE\s+[0-9]+'
 
 # sshd settings
 ssh_root_exp='^PermitRootLogin\s+(yes|no)'
