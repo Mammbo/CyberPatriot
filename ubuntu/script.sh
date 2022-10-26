@@ -332,10 +332,6 @@ function menu {
 
         # Enable automatic updates
         '12')
-            apt_download_upgradeable_exp
-            apt_autoclean_interval_exp
-            apt_unattended_exp
-
             sed_or_append "$apt_check_interval_exp" 'APT::Periodic::Update-Package-Lists "1";' "$apt_periodic_conf"
             echo 'Enabled daily update checks'
 
