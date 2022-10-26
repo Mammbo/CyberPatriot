@@ -15,7 +15,7 @@
 
 <#
     .SYNOPSIS
-    Scripts and whatnot for use in CyberPatriot.
+    Scripts and checklists for use in CyberPatriot.
 
     .DESCRIPTION
     A script for use on either Windows 10 or Windows Server
