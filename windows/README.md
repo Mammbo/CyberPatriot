@@ -24,6 +24,6 @@ Currently applies to both Windows 10 and Windows Server.
 - [ ] Add missing groups
 - [ ] Remove prohibited/unwanted software
 - [ ] Lock down browser  
-       If the browser is Firefox, basically just set every setting
+      If the browser is Firefox, basically just set every setting
       to the most strict in the security settings
 - [ ] Install recommended programs
