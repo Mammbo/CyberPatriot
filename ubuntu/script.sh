@@ -356,7 +356,7 @@ function menu {
             ;;
 
         '13')
-            echo "To be uninstalled: $bad_software"
+            # The lack of the -y flag here is deliberate to make sure the user actually checks what's being removed
             apt-get remove --purge $bad_software
 
             echo 'Prohibited software uninstalled!'
