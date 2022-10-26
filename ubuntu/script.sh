@@ -306,21 +306,21 @@ function menu {
 
             # Replace current values with new ones if possible,
             # otherwise append to end of file
-            if grep -Eq "$pass_max_exp"; then
+            if grep -Eq "$pass_max_exp" '/etc/login.defs'; then
                 sed -i "s\`$pass_max_exp\`PASS_MAX_DAYS	$pass_max\`g" '/etc/login.defs'
             else
                 echo "PASS_MAX_DAYS	$pass_max" >> '/etc/login.defs'
             fi
             echo 'Set max age'
 
-            if grep -Eq "$pass_min_exp"; then
+            if grep -Eq "$pass_min_exp" '/etc/login.defs'; then
                 sed -i "s\`$pass_min_exp\`PASS_MIN_DAYS	$pass_min\`g" '/etc/login.defs'
             else
                 echo "PASS_MIN_DAYS	$pass_min" >> '/etc/login.defs'
             fi
             echo 'Set minimum age'
 
-            if grep -Eq "$pass_warn_exp"; then
+            if grep -Eq "$pass_warn_exp" '/etc/login.defs'; then
                 sed -i "s\`$pass_warn_exp\`PASS_WARN_AGE	$pass_warn\`g" '/etc/login.defs'
             else
                 echo "PASS_WARN_AGE	$pass_warn" >> '/etc/login.defs'
