@@ -119,8 +119,8 @@ pass_warn='7'
 function menu {
     echo
     echo '01) Run updates                       10) Disable guest account'
-    echo '02) Enable & Configure UFW            11) Set password expiry'
-    echo '03) Enable & configure sshd           12) Enable automatic updates'
+    echo '02) Enable automatic updates          11) Set password expiry'
+    echo '03) Enable & Configure UFW            12) Enable & configure sshd'
     echo '04) Find/remove unauthorized users    13) Remove prohibited software'
     echo '05) Add missing users'
     echo '06) Fix administrators'
@@ -141,8 +141,27 @@ function menu {
             echo 'Done updating!'
             ;;
 
-        # Set up UFW
+        # Enable automatic updates
         2)
+            sed_or_append "$apt_check_interval_exp" 'APT::Periodic::Update-Package-Lists "1";' "$apt_periodic_conf"
+            echo 'Enabled daily update checks'
+
+            sed_or_append "$apt_download_upgradeable_exp" 'APT::Periodic::Download-Upgradeable-Packages "1";' "$apt_periodic_conf"
+            echo 'Enabled auto-downloading upgradeable packages'
+
+            sed_or_append "$apt_autoclean_interval_exp" 'APT::Periodic::AutocleanInterval "1";' "$apt_periodic_conf"
+            echo 'Enabled daily package cleaning'
+
+            sed_or_append "$apt_unattended_exp" 'APT::Periodic::Unattended-Upgrade "1";' "$apt_periodic_conf"
+            echo 'Enabled unattended upgrades'
+
+            cp -f "$apt_periodic_conf" "$apt_autoupgrade_conf"
+
+            echo 'Done configuring automatic updates!'
+            ;;
+
+        # Set up UFW
+        3)
             apt-get install ufw -y
 
             rule='default deny'
@@ -152,27 +171,6 @@ function menu {
             done
 
             ufw enable
-            echo 'Done configuring!'
-            ;;
-
-        # Set up sshd
-        3)
-            apt-get install openssh-server -y
-
-            echo 'Enabling & starting service'
-            systemctl enable ssh
-            systemctl start ssh
-
-            prompt 'Prohibit root login?' 'y'
-            if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
-            sed_or_append "$ssh_root_exp" "PermitRootLogin $yes_no" "$sshd_conf"
-
-            prompt 'Prohibit empty passwords?' 'y'
-            if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
-            sed_or_append "$ssh_empty_pass_exp" "PermitEmptyPasswords $yes_no" "$sshd_conf"
-
-            echo 'Restarting service'
-            systemctl restart sshd
             echo 'Done configuring!'
             ;;
 
@@ -336,23 +334,25 @@ function menu {
             echo 'Done setting password expiry!'
             ;;
 
-        # Enable automatic updates
+        # Set up sshd
         12)
-            sed_or_append "$apt_check_interval_exp" 'APT::Periodic::Update-Package-Lists "1";' "$apt_periodic_conf"
-            echo 'Enabled daily update checks'
+            apt-get install openssh-server -y
 
-            sed_or_append "$apt_download_upgradeable_exp" 'APT::Periodic::Download-Upgradeable-Packages "1";' "$apt_periodic_conf"
-            echo 'Enabled auto-downloading upgradeable packages'
+            echo 'Enabling & starting service'
+            systemctl enable ssh
+            systemctl start ssh
 
-            sed_or_append "$apt_autoclean_interval_exp" 'APT::Periodic::AutocleanInterval "1";' "$apt_periodic_conf"
-            echo 'Enabled daily package cleaning'
+            prompt 'Prohibit root login?' 'y'
+            if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
+            sed_or_append "$ssh_root_exp" "PermitRootLogin $yes_no" "$sshd_conf"
 
-            sed_or_append "$apt_unattended_exp" 'APT::Periodic::Unattended-Upgrade "1";' "$apt_periodic_conf"
-            echo 'Enabled unattended upgrades'
+            prompt 'Prohibit empty passwords?' 'y'
+            if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
+            sed_or_append "$ssh_empty_pass_exp" "PermitEmptyPasswords $yes_no" "$sshd_conf"
 
-            cp -f "$apt_periodic_conf" "$apt_autoupgrade_conf"
-
-            echo 'Done configuring automatic updates!'
+            echo 'Restarting service'
+            systemctl restart sshd
+            echo 'Done configuring!'
             ;;
 
         13)
