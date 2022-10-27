@@ -357,7 +357,7 @@ function menu {
 
         13)
             # The lack of the -y flag here is deliberate to make sure the user actually checks what's being removed
-            apt-get remove --purge $bad_software
+            apt-get purge $bad_software
 
             echo 'Prohibited software uninstalled!'
             echo 'Make sure that nothing else suspicious-looking is still on the desktop or elsewhere'
