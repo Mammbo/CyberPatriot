@@ -120,7 +120,7 @@ function menu {
     echo
     echo '01) Run updates                       10) Disable guest account'
     echo '02) Enable automatic updates          11) Set password expiry'
-    echo '03) Enable & Configure UFW            12) Enable & configure sshd'
+    echo '03) Enable & Configure UFW            12) Configure services'
     echo '04) Find/remove unauthorized users    13) Remove prohibited software'
     echo '05) Add missing users'
     echo '06) Fix administrators'
@@ -334,25 +334,42 @@ function menu {
             echo 'Done setting password expiry!'
             ;;
 
-        # Set up sshd
+        # Set up services
         12)
-            apt-get install openssh-server -y
+            ### sshd service ###
+            prompt 'Allow ssh on machine?'
 
-            echo 'Enabling & starting service'
-            systemctl enable ssh
-            systemctl start ssh
+            if [ $? = 1 ]; then
+                apt-get install ssh -y
 
-            prompt 'Prohibit root login?' 'y'
-            if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
-            sed_or_append "$ssh_root_exp" "PermitRootLogin $yes_no" "$sshd_conf"
+                echo 'Enabling & starting service'
+                systemctl enable ssh
+                systemctl start ssh
 
-            prompt 'Prohibit empty passwords?' 'y'
-            if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
-            sed_or_append "$ssh_empty_pass_exp" "PermitEmptyPasswords $yes_no" "$sshd_conf"
+                echo 'Configuring UFW rules'
+                ufw allow ssh
 
-            echo 'Restarting service'
-            systemctl restart sshd
-            echo 'Done configuring!'
+                prompt 'Prohibit root login?' 'y'
+                if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
+                sed_or_append "$ssh_root_exp" "PermitRootLogin $yes_no" "$sshd_conf"
+
+                prompt 'Prohibit empty passwords?' 'y'
+                if [ $? = 1 ]; then yes_no='no'; else yes_no='yes'; fi
+                sed_or_append "$ssh_empty_pass_exp" "PermitEmptyPasswords $yes_no" "$sshd_conf"
+
+                echo 'Restarting service'
+                systemctl restart sshd
+                echo 'Done configuring ssh!'
+            else
+                echo 'Stopping service'
+                systemctl stop ssh
+                systemctl disable ssh
+                echo 'Uninstalling'
+                apt-get purge openssh-server -y
+                'Configuring UFW rules'
+                ufw delete allow ssh
+                echo 'ssh disabled and purged!'
+            fi
             ;;
 
         13)
