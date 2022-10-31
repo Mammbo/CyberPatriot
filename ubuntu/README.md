@@ -22,6 +22,7 @@
 - [x] Find files on system with high permissions (eg. 700+)
 - [x] Run rkhunter
 - [x] Run clamav
+- [x] Find media files (videos, audio, images)
 
 ## Not Managed By Script
 

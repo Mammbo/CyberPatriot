@@ -104,6 +104,129 @@ pass_max='90'
 pass_min='7'
 pass_warn='7'
 
+# Media file extensions
+# Mostly from various Wikipedia pages' tables of extensions
+# There are probably far more extensions than really necessary here,
+# might be worth going through by hand at some point to see what can be removed
+media_files_raw=(
+    # Audio formats
+    'aa'
+    'aac'
+    'aax'
+    'act'
+    'aif'
+    'aiff'
+    'alac'
+    'amr'
+    'ape'
+    'au'
+    'awb'
+    'dss'
+    'dvf'
+    'flac'
+    'gsm'
+    'iklax'
+    'ivs'
+    'm4a'
+    'm4b'
+    'mmf'
+    'mp3'
+    'mpc'
+    'msv'
+    'nmf'
+    'ogg'
+    'oga'
+    'mogg'
+    'opus'
+    'ra'
+    'raw'
+    'rf64'
+    'sln'
+    'tta'
+    'voc'
+    'vox'
+    'wav'
+    'wma'
+    'wv'
+    '8svx'
+    'cda'
+    # Video formats
+    'webm'
+    'mkv'
+    'flv'
+    'vob'
+    'ogv'
+    'ogg'
+    'drc'
+    'gif'
+    'gifv'
+    'mng'
+    'avi'
+    'mts'
+    'm2ts'
+    'mov'
+    'qt'
+    'wmv'
+    'yuv'
+    'rm'
+    'rmvb'
+    'viv'
+    'asf'
+    'amv'
+    'mp4'
+    'm4p'
+    'm4v'
+    'mpg'
+    'mp2'
+    'mpeg'
+    'mpe'
+    'mpv'
+    'm2v'
+    'svi'
+    '3gp'
+    '3g2'
+    'mxf'
+    'roq'
+    'nsv'
+    'f4v'
+    'f4p'
+    'f4a'
+    'f4b'
+    # Picture formats
+    'png'
+    'jpg'
+    'jpeg'
+    'jfif'
+    'exif'
+    'tif'
+    'tiff'
+    'gif'
+    'bmp'
+    'ppm'
+    'pgm'
+    'pbm'
+    'pnm'
+    'webp'
+    'heif'
+    'avif'
+    'ico'
+    'tga'
+    'psd'
+    'xcf'
+)
+
+found_media_file='media.txt'
+media_path='/'
+
+media_files=()
+
+# Convert list of extensions to parameters for find command
+for extension in "${media_files_raw[@]}"; do
+    if [ $media_files ]; then media_files+=('-o'); fi
+    media_files+=('-iname')
+    media_files+=("*.$extension")
+done
+
 ### Regular expressions ###
 # The caret (^) at the beginning of some expressions is to make sure that commented-out lines
 # aren't accidentally matched instead of the actual config option
@@ -133,7 +256,7 @@ function menu {
     echo '06) Fix administrators                15) List files with high permissions'
     echo '07) Change all passwords              16) Run rkhunter'
     echo '08) Lock account                      17) Run clamav'
-    echo '09) Add new group'
+    echo '09) Add new group                     18) List media files'
     echo
     echo '99) Exit script'
     read -r -p '> ' input
@@ -497,6 +620,25 @@ function menu {
 
             echo "Running with arguments ${clamscan_params[@]}"
             clamscan "$clamscan_path" ${clamscan_params[@]}
+            ;;
+
+        # List media files
+        18)
+            reprompt_var 'Output file' found_media_file
+            found_media_file="$reprompt_value"
+            reprompt_var 'Path to search' media_path
+            media_path="$reprompt_value"
+            prompt "Print files as they're found?" 'n'
+
+            if [ $? = 1 ]; then
+                echo 'Searching...'
+                find "$media_path" -type f \( "${media_files[@]}" \) | tee "$found_media_file"
+            else
+                echo 'Searching...'
+                find "$media_path" -type f \( "${media_files[@]}" \) > "$found_media_file"
+            fi
+
+            echo "Found $(wc -l < "$found_media_file") media files!"
             ;;
 
         # Exit
