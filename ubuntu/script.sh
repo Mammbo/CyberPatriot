@@ -306,7 +306,7 @@ function menu {
 
         # Find and remove unauthorized users
         4)
-            reprompt_var 'Path to list of allowed usernames' 'users_file'
+            reprompt_var 'Path to list of allowed usernames' users_file
             users_file="$reprompt_value"
             get_users
 
@@ -335,7 +335,7 @@ function menu {
 
         # Add missing users
         5)
-            reprompt_var 'Path to list of allowed usernames' 'users_file'
+            reprompt_var 'Path to list of allowed usernames' users_file
             users_file="$reprompt_value"
             get_users
 
@@ -351,11 +351,11 @@ function menu {
 
         # Fix administrators
         6)
-            reprompt_var 'Path to list of administrators' 'admin_file'
+            reprompt_var 'Path to list of administrators' admin_file
             admin_file="$reprompt_value"
-            reprompt_var 'Path to list of normal users' 'normal_file'
+            reprompt_var 'Path to list of normal users' normal_file
             normal_file="$reprompt_value"
-            reprompt_var 'Name of sudoers group (generally `sudo` or `wheel`)' 'sudo_group'
+            reprompt_var 'Name of sudoers group (generally `sudo` or `wheel`)' sudo_group
             sudo_group="$reprompt_value"
             get_users
 
