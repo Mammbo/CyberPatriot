@@ -4,7 +4,9 @@
 
 - [x] Run updates
 - [x] Enable & configure UFW
-- [x] Configure sshd (enable, disable root login, etc.)
+- [x] Configure services
+  - sshd
+  - Samba
 - [x] Remove unauthorized users
 - [x] Add missing users
 - [x] Add/remove users from sudo group
