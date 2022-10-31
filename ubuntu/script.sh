@@ -84,11 +84,13 @@ echo
 echo 'Make sure to run this as root!'
 echo "Current user: $(whoami)"
 
+# Config file locations
 sshd_conf='/etc/ssh/sshd_config'
 lightdm_conf='/etc/lightdm/lightdm.conf'
 apt_periodic_conf='/etc/apt/apt.conf.d/10periodic'
 apt_autoupgrade_conf='/etc/apt/apt.conf.d/20auto-upgrades'
 
+# Permissive file search parameters
 high_perm_min='700'
 high_perm_file='high-perms.txt'
 high_perm_root='/'
@@ -96,6 +98,11 @@ high_perm_root='/'
 sudo_group='sudo'
 
 bad_software='aircrack-ng deluge hashcat hydra john kismet nmap openvpn qbittorrent telnet wireguard zenmap'
+
+# Password expiry settings
+pass_max='90'
+pass_min='7'
+pass_warn='7'
 
 ### Regular expressions ###
 # The caret (^) at the beginning of some expressions is to make sure that commented-out lines
@@ -110,15 +117,11 @@ pass_warn_exp='^PASS_WARN_AGE\s+[0-9]+'
 ssh_root_exp='^PermitRootLogin\s+(yes|no)'
 ssh_empty_pass_exp='^PermitEmptyPasswords\s+(yes|no)'
 
-# Apt settings
+# APT settings
 apt_check_interval_exp='^APT::Periodic::Update-Package-Lists\s+"[0-9]+";'
 apt_download_upgradeable_exp='^APT::Periodic::Download-Upgradeable-Packages\s+"[0-9]+";'
 apt_autoclean_interval_exp='^APT::Periodic::AutocleanInterval\s+"[0-9]+";'
 apt_unattended_exp='^APT::Periodic::Unattended-Upgrade\s+"[0-9]+";'
-
-pass_max='90'
-pass_min='7'
-pass_warn='7'
 
 function menu {
     echo
