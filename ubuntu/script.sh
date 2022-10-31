@@ -89,6 +89,10 @@ lightdm_conf='/etc/lightdm/lightdm.conf'
 apt_periodic_conf='/etc/apt/apt.conf.d/10periodic'
 apt_autoupgrade_conf='/etc/apt/apt.conf.d/20auto-upgrades'
 
+high_perm_min='700'
+high_perm_file='high-perms.txt'
+high_perm_root='/'
+
 sudo_group='sudo'
 
 bad_software='aircrack-ng deluge hashcat hydra john kismet nmap openvpn qbittorrent telnet wireguard zenmap'
@@ -122,8 +126,8 @@ function menu {
     echo '02) Enable automatic updates          11) Set password expiry'
     echo '03) Enable & Configure UFW            12) Configure services'
     echo '04) Find/remove unauthorized users    13) Remove prohibited software'
-    echo '05) Add missing users'
-    echo '06) Fix administrators'
+    echo '05) Add missing users                 14) Clear /etc/rc.local'
+    echo '06) Fix administrators                15) List files with high permissions'
     echo '07) Change all passwords'
     echo '08) Lock account'
     echo '09) Add new group'
@@ -131,7 +135,7 @@ function menu {
     echo '99) Exit script'
     read -r -p '> ' input
 
-    case $(($input + 0)) in
+    case $(($input)) in
         # Run updates
         1)
             prompt 'Reboot after updates? Recommended if DE crashes during updates' 'n'
@@ -414,12 +418,33 @@ function menu {
             fi
             ;;
 
+        # Remove prohibited software
         13)
             # The lack of the -y flag here is deliberate to make sure the user actually checks what's being removed
             apt-get purge $bad_software
 
             echo 'Prohibited software uninstalled!'
             echo 'Make sure that nothing else suspicious-looking is still on the desktop or elsewhere'
+            ;;
+
+        # Clear /etc/rc.local
+        14)
+            echo 'exit 0' > /etc/rc.local
+            echo 'Cleared /etc/rc.local'
+            ;;
+
+        # List files with high permissions
+        15)
+            reprompt_var 'Minimum permission' high_perm_min
+            high_perm_min="$reprompt_value"
+            reprompt_var 'File to save paths to' high_perm_file
+            high_perm_file="$reprompt_value"
+            reprompt_var 'Search root' high_perm_root
+            high_perm_root="$reprompt_value"
+
+            echo 'Searching...'
+            find "$high_perm_root" -type f -perm "-$high_perm_min" > "$high_perm_file"
+            echo "Found $(wc -l < "$high_perm_file") files with permissions 700 or higher in $high_perm_root!"
             ;;
 
         # Exit

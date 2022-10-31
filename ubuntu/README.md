@@ -18,6 +18,8 @@
 - [x] Enable automatic updates through APT
 - [x] Remove prohibited/unwanted software  
       **You should still check for suspicious software yourself**
+- [x] Clear `/etc/rc.local` (startup file)
+- [x] Find files on system with high permissions (eg. 700+)
 
 ## Not Managed By Script
 
