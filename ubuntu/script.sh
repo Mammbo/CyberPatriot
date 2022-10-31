@@ -321,8 +321,11 @@ function menu {
         # Set password expiry
         11)
             reprompt_var 'Max password age' pass_max
+            pass_max="$reprompt_value"
             reprompt_var 'Minimum password age' pass_min
+            pass_min="$reprompt_value"
             reprompt_var 'Days before password expiry warning' pass_warn
+            pass_warn="$reprompt_value"
 
             # Replace current values with new ones if possible,
             # otherwise append to end of file
