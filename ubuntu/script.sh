@@ -128,8 +128,8 @@ function menu {
     echo '04) Find/remove unauthorized users    13) Remove prohibited software'
     echo '05) Add missing users                 14) Clear /etc/rc.local'
     echo '06) Fix administrators                15) List files with high permissions'
-    echo '07) Change all passwords'
-    echo '08) Lock account'
+    echo '07) Change all passwords              16) Run rkhunter'
+    echo '08) Lock account                      17) Run clamav'
     echo '09) Add new group'
     echo
     echo '99) Exit script'
@@ -448,6 +448,52 @@ function menu {
             echo 'Searching...'
             find "$high_perm_root" -type f -perm "-$high_perm_min" > "$high_perm_file"
             echo "Found $(wc -l < "$high_perm_file") files with permissions 700 or higher in $high_perm_root!"
+            ;;
+
+        # Run rkhunter
+        16)
+            apt-get install rkhunter -y
+            rkhunter --update
+            rkhunter -c --sk
+            echo 'Done running rkhunter!'
+            ;;
+
+        # Run clamav
+        17)
+            clamscan_params=()
+
+            reprompt_var 'Path to scan' clamscan_path
+            clamscan_path="$reprompt_value"
+
+            prompt 'Recurse?' 'y'
+            if [ $? = 1 ]; then
+                clamscan_params+=('--recursive')
+            fi
+
+            prompt 'Save log file?' 'y'
+            if [ $? = 1 ]; then
+                reprompt_var 'Path to log file' clamscan_logs
+                clamscan_logs="$reprompt_value"
+                clamscan_params+=('--log')
+                clamscan_params+=("$clamscan_logs")
+            fi
+
+            prompt 'Only print infected files to stdout?' 'y'
+            if [ $? = 1 ]; then
+                clamscan_params+=('--infected')
+            fi
+
+            prompt 'Verbose output?' 'n'
+            if [ $? = 1 ]; then
+                clamscan_params+=('--verbose')
+            fi
+
+            apt-get install clamav -y
+            systemctl enable clamav-freshclam
+            systemctl start clamav-freshclam
+
+            echo "Running with arguments ${clamscan_params[@]}"
+            clamscan "$clamscan_path" ${clamscan_params[@]}
             ;;
 
         # Exit

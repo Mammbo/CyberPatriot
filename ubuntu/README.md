@@ -20,6 +20,8 @@
       **You should still check for suspicious software yourself**
 - [x] Clear `/etc/rc.local` (startup file)
 - [x] Find files on system with high permissions (eg. 700+)
+- [x] Run rkhunter
+- [x] Run clamav
 
 ## Not Managed By Script
 
