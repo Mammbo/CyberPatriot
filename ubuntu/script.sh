@@ -92,7 +92,7 @@ apt_autoupgrade_conf='/etc/apt/apt.conf.d/20auto-upgrades'
 
 # Permissive file search parameters
 high_perm_min='700'
-high_perm_file='high-perms.txt'
+high_perm_file='high-perms.log'
 high_perm_root='/'
 
 sudo_group='sudo'
@@ -103,6 +103,10 @@ bad_software='aircrack-ng deluge hashcat hydra john kismet nmap openvpn qbittorr
 pass_max='90'
 pass_min='7'
 pass_warn='7'
+
+# clamav settings
+clamscan_path='/'
+clamscan_logs='clamav.log'
 
 # Media file extensions
 # Mostly from various Wikipedia pages' tables of extensions
@@ -215,7 +219,7 @@ media_files_raw=(
     'xcf'
 )
 
-found_media_file='media.txt'
+found_media_file='media.log'
 media_path='/'
 
 media_files=()
