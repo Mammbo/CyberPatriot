@@ -609,7 +609,7 @@ function menu {
                 clamscan_params+=('--infected')
             fi
 
-            prompt 'Verbose output?' 'n'
+            prompt 'Verbose output?' 'y'
             if [ $? = 1 ]; then
                 clamscan_params+=('--verbose')
             fi
@@ -618,7 +618,6 @@ function menu {
             systemctl enable clamav-freshclam
             systemctl start clamav-freshclam
 
-            echo "Running with arguments ${clamscan_params[@]}"
             clamscan "$clamscan_path" ${clamscan_params[@]}
             ;;
 
