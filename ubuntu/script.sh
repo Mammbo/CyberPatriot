@@ -269,9 +269,10 @@ function menu {
         # Run updates
         1)
             prompt 'Reboot after updates? Recommended if DE crashes during updates' 'n'
+            reboot_after_update=$?
             apt-get update
             apt-get upgrade -y
-            if [ $? = 1 ]; then reboot; fi
+            if [ $reboot_after_update = 1 ]; then reboot; fi
             echo 'Done updating!'
             ;;
 
@@ -283,7 +284,7 @@ function menu {
             sed_or_append "$apt_download_upgradeable_exp" 'APT::Periodic::Download-Upgradeable-Packages "1";' "$apt_periodic_conf"
             echo 'Enabled auto-downloading upgradeable packages'
 
-            sed_or_append "$apt_autoclean_interval_exp" 'APT::Periodic::AutocleanInterval "7;' "$apt_periodic_conf"
+            sed_or_append "$apt_autoclean_interval_exp" 'APT::Periodic::AutocleanInterval "7";' "$apt_periodic_conf"
             echo 'Enabled weekly autoclean'
 
             sed_or_append "$apt_unattended_exp" 'APT::Periodic::Unattended-Upgrade "1";' "$apt_periodic_conf"
