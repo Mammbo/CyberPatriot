@@ -23,7 +23,8 @@
 #>
 
 
-# Function taken from https://gitlab.com/-/snippets/2434376
+# Function taken from https://gitlab.com/MysteryBlokHed/powershell-tools,
+# dual-licensed under the Apache 2.0 and MIT licenses
 function Get-Prompt {
     <#
         .SYNOPSIS
@@ -85,7 +86,7 @@ function Get-Prompt {
         Licensed under either of the Apache License, Version 2.0,
         or the MIT license, at your option.
 
-        Source: <https://gitlab.com/-/snippets/2434376>
+        Source: <https://gitlab.com/MysteryBlokHed/powershell-tools>
     #>
 
     param(
@@ -148,7 +149,7 @@ Make sure to run this with administrator privileges!'
 
 $Menu = @{
     # Run updates
-    '1' = {
+    '1'  = {
         if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
             $Response = Get-Prompt 'Updates' 'Third-party PSWindowsUpdate module is not installed. Install to run updates programatically?' 'Yes', 'No' 0 -StringReturn
             if ($Response -eq 'Yes') {
@@ -175,7 +176,7 @@ $Menu = @{
     }
 
     # Enable automatic updates
-    '2' = {
+    '2'  = {
         $WUSettings = (New-Object -com "Microsoft.Update.AutoUpdate").Settings
         $WUSettings.NotificationLevel = 4
         $WUSettings.save()
@@ -183,7 +184,7 @@ $Menu = @{
     }
 
     # Set UAC to highest
-    '3' = {
+    '3'  = {
         $SystemPolicies = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
         Set-ItemProperty -Path $SystemPolicies -Name 'ConsentPromptBehaviorAdmin' -Value 2
         Set-ItemProperty -Path $SystemPolicies -Name 'PromptOnSecureDesktop' -Value 1
@@ -191,7 +192,7 @@ $Menu = @{
     }
 
     # Configure remote desktop
-    '4' = {
+    '4'  = {
         $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Disable', 'Enable' 0 -StringReturn
         $TerminalServer = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
 
