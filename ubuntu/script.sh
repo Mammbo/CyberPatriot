@@ -328,7 +328,7 @@ function menu {
                 prompt 'Delete found users?'
 
                 if [ $? = 1 ]; then
-                    for user in $unauthorized; do
+                    for user in "${unauthorized[@]}"; do
                         echo Deleting $user
                         userdel $user
                     done
@@ -345,6 +345,7 @@ function menu {
             get_users
 
             while IFS= read -r user || [ -n "$user" ]; do
+                if ! [ "$user" ]; then continue; fi
                 if ! printf "$users" | grep -wq "$user"; then
                     echo Adding missing user $user
                     useradd $user
@@ -367,6 +368,7 @@ function menu {
             echo 'Ensuring admins are part of the sudo group'
 
             while IFS= read -r admin || [ -n "$admin" ]; do
+                if ! [ "$user" ]; then continue; fi
                 if ! id -nG "$admin" | grep -qw "$sudo_group"; then
                     echo "User $admin doesn't have admin perms, fixing"
                     usermod -aG "$sudo_group" "$admin"
@@ -376,6 +378,7 @@ function menu {
             echo 'Ensuring standard users are not part of the sudo group'
 
             while IFS= read -r normal || [ -n "$normal" ]; do
+                if ! [ "$user" ]; then continue; fi
                 if id -nG "$normal" | grep -qw "$sudo_group"; then
                     echo "User $normal has admin perms and shouldn't, fixing"
                     gpasswd --delete "$normal" "$sudo_group"
@@ -403,7 +406,7 @@ function menu {
                 else
                     for user in $users; do
                         echo "Changing for $user..."
-                        printf "$new_pass" | passwd --stdin $user
+                        printf "$user:$new_pass" | chpasswd
                     done
                 fi
             done
@@ -429,7 +432,7 @@ function menu {
                 read -r -p 'Users to add (space-separated): ' new_group_users
 
                 for user in $new_group_users; do
-                    usermod -aG $new_group $user
+                    usermod -aG "$new_group" "$user"
                     echo "Added $user to $new_group"
                 done
             fi
