@@ -343,7 +343,7 @@ function menu {
             users_file="$reprompt_value"
             get_users
 
-            while read -r user; do
+            while IFS= read -r user || [ -n "$user" ]; do
                 if ! printf "$users" | grep -wq "$user"; then
                     echo Adding missing user $user
                     useradd $user
@@ -365,7 +365,7 @@ function menu {
 
             echo 'Ensuring admins are part of the sudo group'
 
-            while read -r admin; do
+            while IFS= read -r admin || [ -n "$admin" ]; do
                 if ! id -nG "$admin" | grep -qw "$sudo_group"; then
                     echo "User $admin doesn't have admin perms, fixing"
                     usermod -aG "$sudo_group" "$admin"
@@ -374,7 +374,7 @@ function menu {
 
             echo 'Ensuring standard users are not part of the sudo group'
 
-            while read -r normal; do
+            while IFS= read -r normal || [ -n "$normal" ]; do
                 if id -nG "$normal" | grep -qw "$sudo_group"; then
                     echo "User $normal has admin perms and shouldn't, fixing"
                     gpasswd --delete "$normal" "$sudo_group"
@@ -394,7 +394,9 @@ function menu {
             new_pass_confirm=''
             while ! [ "$new_pass" = "$new_pass_confirm" ] || [ "$new_pass" = '' ]; do
                 read -s -p 'New password: ' new_pass
+                echo
                 read -s -p 'Confirm: ' new_pass_confirm
+                echo
 
                 if ! [ "$new_pass" = "$new_pass_confirm" ]; then echo 'Passwords do not match!'
                 else
