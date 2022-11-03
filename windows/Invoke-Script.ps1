@@ -199,6 +199,15 @@ function Get-ReusedVar {
     return Get-Variable $Name -ValueOnly
 }
 
+function Get-NormalUsers {
+    <#
+        .SYNOPSIS
+        Get user accounts that are not built into Windows.
+    #>
+
+    return (Get-LocalUser).Name | Where-Object { -not ($_ -in $SafeUsers) }
+}
+
 Write-Output '
    ______      __
   / ____/_  __/ /_  ___  _____
@@ -279,12 +288,12 @@ $Menu = @{
     # Find/remove unauthorized users
     4  = {
         Get-ReusedVar 'Path to list of allowed usernames' UsersFile
-        $Users = (Get-LocalUser).Name
+        $Users = Get-NormalUsers
         $AllowedUsers = Get-Content $UsersFile
         $Unauthorized = @()
 
         foreach ($User in $Users) {
-            if ($User -in $SafeUsers) { continue }
+            if (-not $User) { continue }
             if (-not ($User -in $AllowedUsers)) {
                 Write-Output "Unauthorized user: $User"
                 $Unauthorized += $User
@@ -307,10 +316,11 @@ $Menu = @{
     # Add missing users
     5  = {
         Get-ReusedVar 'Path to list of allowed usernames' UsersFile
-        $Users = (Get-LocalUser).Name
+        $Users = Get-NormalUsers
         $AllowedUsers = Get-Content $UsersFile
 
         foreach ($User in $AllowedUsers) {
+            if (-not $User) { continue }
             if (-not ($User -in $Users)) {
                 Write-Output "Adding missing user $User"
                 New-LocalUser $User -NoPassword
@@ -348,6 +358,28 @@ $Menu = @{
         }
 
         Write-Output 'Done fixing administrators!'
+    }
+
+    # Change all passwords
+    7  = {
+        $Users = Get-NormalUsers
+        Write-Output "Changing paswords for the following users:" $Users
+
+        while ($True) {
+            $NewPass = Read-Host -Prompt 'New password' -AsSecureString
+            $ConfirmNewPass = Read-Host -Prompt 'Confirm' -AsSecureString
+            if (-not ($NewPass -eq $ConfirmNewPass)) {
+                Write-Output 'Passwords do not match!'
+            }
+            else { break }
+        }
+
+        foreach ($User in $Users) {
+            Write-Output "Changing for $User..."
+            Set-LocalUser -Name $User -Password $NewPass
+        }
+
+        Write-Output 'Done changing passwords!'
     }
 
     # Configure remote desktop
