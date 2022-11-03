@@ -235,10 +235,10 @@ function Show-Menu {
 
 99) Exit script'
 
-    $Input = Read-Host 'Option'
+    $Option = Read-Host 'Option'
 
-    if ($Menu[$Input]) { . $Menu[$Input] }
-    else { Write-Output "Unknown option $Input" }
+    if ($Menu[$Option]) { . $Menu[$Option] }
+    else { Write-Output "Unknown option $Option" }
 }
 
 while ($True) { Show-Menu }
