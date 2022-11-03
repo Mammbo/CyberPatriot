@@ -222,6 +222,8 @@ Make sure to run this with administrator privileges!'
 # but that should be allowed on the system
 $SafeUsers = ('Administrator', 'DefaultAccount', 'Guest', 'WDAGUtilityAccount')
 
+$AUPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+
 $Menu = @{
     # Run updates
     1  = {
@@ -257,11 +259,11 @@ $Menu = @{
         $WUSettings.save()
         
         # Registry values
-        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'NoAutoUpdate' -Value 0
-        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'AUOptions' -Value 4
-        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'ScheduledInstallDay' -Value 0
-        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'ScheduledInstallTime' -Value 0
-        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'NoAutoRebootWithLoggedOnUsers' -Value 1
+        Set-ItemProperty -Path $AUPath -Name 'NoAutoUpdate' -Value 0
+        Set-ItemProperty -Path $AUPath -Name 'AUOptions' -Value 4
+        Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallDay' -Value 0
+        Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallTime' -Value 0
+        Set-ItemProperty -Path $AUPath -Name 'NoAutoRebootWithLoggedOnUsers' -Value 1
 
         Write-Output 'Automatic updates enabled!'
     }
