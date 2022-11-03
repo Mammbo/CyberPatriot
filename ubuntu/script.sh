@@ -76,8 +76,6 @@ function sed_or_append {
     fi
 }
 
-
-
 echo '   ______      __'
 echo '  / ____/_  __/ /_  ___  _____'
 echo ' / /   / / / / __ \/ _ \/ ___/'
