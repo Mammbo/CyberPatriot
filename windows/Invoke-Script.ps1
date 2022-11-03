@@ -269,13 +269,13 @@ $Menu = @{
     # Find/remove unauthorized users
     4  = {
         Get-ReusedVar 'Path to list of allowed usernames' UsersFile
-        $Users = Get-LocalUser
+        $Users = (Get-LocalUser).Name
         $AllowedUsers = Get-Content $UsersFile
         $Unauthorized = @()
 
         foreach ($User in $Users) {
             if ($User -in $SafeUsers) { continue }
-            if (-not $User -in $AllowedUsers) {
+            if (-not ($User -in $AllowedUsers)) {
                 Write-Output "Unauthorized user: $User"
                 $Unauthorized += $User
             }
