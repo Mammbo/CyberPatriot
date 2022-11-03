@@ -208,6 +208,19 @@ function Get-NormalUsers {
     return (Get-LocalUser).Name | Where-Object { -not ($_ -in $SafeUsers) }
 }
 
+function Get-UnsecureString {
+    <#
+        .SYNOPSIS
+        Convert a SecureString to a plaintext string.
+    #>
+    param(
+        [Parameter(Mandatory = $True, Position = 0)]
+        [securestring]$SecureString
+    )
+
+    return [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureString))
+}
+
 Write-Output '
    ______      __
   / ____/_  __/ /_  ___  _____
@@ -368,7 +381,7 @@ $Menu = @{
         while ($True) {
             $NewPass = Read-Host -Prompt 'New password' -AsSecureString
             $ConfirmNewPass = Read-Host -Prompt 'Confirm' -AsSecureString
-            if (-not ($NewPass -eq $ConfirmNewPass)) {
+            if (-not ((Get-UnsecureString $NewPass) -ceq (Get-UnsecureString $ConfirmNewPass))) {
                 Write-Output 'Passwords do not match!'
             }
             else { break }
