@@ -310,6 +310,36 @@ $Menu = @{
         Write-Output 'Added missing users!'
     }
 
+    # Fix administrators
+    6  = {
+        Get-ReusedVar 'Path to list of administrators' AdminFile
+        Get-ReusedVar 'Path to list of normal users' NormalFile
+        $Administrators = (Get-LocalGroupMember Administrators).Name | ForEach-Object { $_.Replace("$env:COMPUTERNAME\", '') }
+
+        $Admins = Get-Content $AdminFile
+        $Normal = Get-Content $NormalFile
+
+        Write-Output 'Ensuring admins are part of the Administrators group'
+
+        foreach ($User in $Admins) {
+            if (-not ($User -in $Administrators)) {
+                Write-Output "User $User doesn't have admin perms, fixing"
+                Add-LocalGroupMember -Name Administrators -Member $User
+            }
+        }
+
+        Write-Output 'Ensuring standard users are not part of the Administrators group'
+
+        foreach ($User in $Normal) {
+            if ($User -in $Administrators) {
+                Write-Output "User $User has admin perms and shouldn't, fixing"
+                Remove-LocalGroupMember -Name Administrators -Member $User
+            }
+        }
+
+        Write-Output 'Done fixing administrators!'
+    }
+
     # Configure remote desktop
     10 = {
         $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Disable', 'Enable' 0 -StringReturn
