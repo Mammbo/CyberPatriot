@@ -246,6 +246,8 @@ $SafeUsers = ('Administrator', 'DefaultAccount', 'Guest', 'WDAGUtilityAccount')
 
 $AUPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
 
+$ToDisable = 'Guest'
+
 $Menu = @{
     # Run updates
     1  = {
@@ -395,9 +397,24 @@ $Menu = @{
         Write-Output 'Done changing passwords!'
     }
 
+    # Disable/enable user
+    8  = {
+        $Response = Get-Prompt 'Enable or disable user?' 'Enable', 'Disable' 1 -StringReturn
+        $User = Get-ReusedVar 'Username' ToDisable
+
+        if ($Response -eq 'Enable') {
+            Enable-LocalUser -Name $User
+            Write-Output "User $User has been enabled!"
+        }
+        else {
+            Disable-LocalUser -Name $User
+            Write-Output "User $User has been disabled!"
+        }
+    }
+
     # Configure remote desktop
     10 = {
-        $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Disable', 'Enable' 0 -StringReturn
+        $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Enable', 'Disable' 1 -StringReturn
         $TerminalServer = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
 
         if ($Response -eq 'Disable') {
@@ -428,7 +445,7 @@ function Show-Menu {
 05) Add missing users
 06) Fix administrators
 07) Change all passwords
-08) Disable user
+08) Enable/disable user
 09) Add new group
 
 99) Exit script'
