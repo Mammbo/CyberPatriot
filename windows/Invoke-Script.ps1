@@ -255,7 +255,15 @@ $Menu = @{
         $WUSettings = (New-Object -com "Microsoft.Update.AutoUpdate").Settings
         $WUSettings.NotificationLevel = 4
         $WUSettings.save()
-        Write-Output 'Automatic updates enabled'
+        
+        # Registry values
+        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'NoAutoUpdate' -Value 0
+        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'AUOptions' -Value 4
+        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'ScheduledInstallDay' -Value 0
+        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'ScheduledInstallTime' -Value 0
+        Set-ItemProperty -Path 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU' -Name 'NoAutoRebootWithLoggedOnUsers' -Value 1
+
+        Write-Output 'Automatic updates enabled!'
     }
 
     # Set UAC to highest
