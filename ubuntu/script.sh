@@ -76,6 +76,19 @@ function sed_or_append {
     fi
 }
 
+
+
+echo '   ______      __'
+echo '  / ____/_  __/ /_  ___  _____'
+echo ' / /   / / / / __ \/ _ \/ ___/'
+echo '/ /___/ /_/ / /_/ /  __/ /'
+echo '\____/\__, /_.___/\___/_/'
+echo '    _/____/     __       _       __'
+echo '   / __ \____ _/ /______(_)___  / /_'
+echo '  / /_/ / __ `/ __/ ___/ / __ \/ __/'
+echo ' / ____/ /_/ / /_/ /  / / /_/ / /_'
+echo '/_/    \__,_/\__/_/  /_/\____/\__/'
+echo
 echo 'Ubuntu CyberPatriot Script'
 echo
 echo 'CyberPatriot Scripts  Copyright (C) 2022  Adam Thompson-Sharpe'

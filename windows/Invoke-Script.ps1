@@ -139,8 +139,19 @@ function Get-Prompt {
     }
 }
 
-Write-Output `
-    'Windows CyberPatriot Script
+Write-Output '
+   ______      __
+  / ____/_  __/ /_  ___  _____
+ / /   / / / / __ \/ _ \/ ___/
+/ /___/ /_/ / /_/ /  __/ /
+\____/\__, /_.___/\___/_/
+    _/____/     __       _       __
+   / __ \____ _/ /______(_)___  / /_
+  / /_/ / __ `/ __/ ___/ / __ \/ __/
+ / ____/ /_/ / /_/ /  / / /_/ / /_
+/_/    \__,_/\__/_/  /_/\____/\__/
+
+Windows CyberPatriot Script
 
 CyberPatriot Scripts  Copyright (C) 2022  Adam Thompson-Sharpe
 Licensed under the GNU General Public License, Version 3.0
