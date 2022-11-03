@@ -294,6 +294,22 @@ $Menu = @{
         Write-Output 'Done!'
     }
 
+    # Add missing users
+    5  = {
+        Get-ReusedVar 'Path to list of allowed usernames' UsersFile
+        $Users = (Get-LocalUser).Name
+        $AllowedUsers = Get-Content $UsersFile
+
+        foreach ($User in $AllowedUsers) {
+            if (-not ($User -in $Users)) {
+                Write-Output "Adding missing user $User"
+                New-LocalUser $User -NoPassword
+            }
+        }
+
+        Write-Output 'Added missing users!'
+    }
+
     # Configure remote desktop
     10 = {
         $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Disable', 'Enable' 0 -StringReturn
