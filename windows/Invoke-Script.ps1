@@ -421,7 +421,7 @@ $Menu = @{
 
     # Disable/enable user
     8  = {
-        $Response = Get-Prompt 'Enable or disable user?' 'Enable', 'Disable' 1 -StringReturn
+        $Response = Get-Prompt 'Password Management' 'Enable or disable user?' 'Enable', 'Disable' 1 -StringReturn
         Get-ReusedVar 'Username' ToDisable
 
         if ($Response -eq 'Enable') {
@@ -439,7 +439,7 @@ $Menu = @{
         $GroupName = Read-Host -Prompt 'New group to add'
         New-LocalGroup $GroupName
 
-        $Response = Get-Prompt 'Add members to this group?' 'Yes', 'No' 0 -StringReturn
+        $Response = Get-Prompt 'Group Management' 'Add members to this group?' 'Yes', 'No' 0 -StringReturn
         if ($Response -eq 'Yes') {
             $Users = Read-Host -Prompt 'Users to add (space-separated)'
             $Users = $Users.Split(' ')
