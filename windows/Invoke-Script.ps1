@@ -650,7 +650,8 @@ $Menu = @{
         # Write new policy
         $Policy | Out-File -Force 'cp-secpol-new.cfg'
         (Get-Item 'cp-secpol-new.cfg' -Force).Attributes += 'Hidden'
-        SecEdit.exe /configure /db 'c:\windows\security\local.sdb' /cfg 'cp-secpol-new.cfg' /areas SECURITYPOLICY
+        SecEdit.exe /configure /db 'C:\Windows\security\local.sdb' /cfg 'cp-secpol-new.cfg' /areas SECURITYPOLICY
+        SecEdit.exe /configure /db 'C:\Windows\security\database\secedit.sdb' /cfg 'cp-secpol-new.cfg' /areas SECURITYPOLICY
         Remove-Item 'cp-secpol.cfg' -Force
         Remove-Item 'cp-secpol-new.cfg' -Force
 
