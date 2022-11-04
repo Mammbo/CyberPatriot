@@ -244,6 +244,9 @@ Make sure to run this with administrator privileges!'
 # but that should be allowed on the system
 $SafeUsers = ('Administrator', 'DefaultAccount', 'Guest', 'WDAGUtilityAccount')
 
+# Shares available by default
+$SafeShares = ('ADMIN$', 'C$', 'IPC$')
+
 # Path to Automatic Updates in registry
 $AUPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
 
@@ -506,6 +509,25 @@ $Menu = @{
         Write-Output 'Security policy updated!'
     }
 
+    # Find/remove SMB shares
+    12 = {
+        $Shares = Get-SmbShare | Select-Object -Property Name, Path | Where-Object { -not ($_.Name -in $SafeShares) }
+        if ($Shares) {
+            Write-Output 'Non-default shares found!' $Shares
+            $Response = Get-Prompt 'File Shares' 'Remove all found shares?' 'Yes', 'No' 0 -StringReturn
+            if ($Response -eq 'Yes') {
+                foreach ($Share in $Shares) {
+                    Remove-SmbShare -Name $Share.Name
+                    Write-Output "Removed share $Share.Name"
+                }
+            }
+            Write-Output 'Done listing shares!'
+        }
+        else {
+            Write-Output 'No non-default shares found'
+        }
+    }
+
     # Exit script
     99 = {
         Write-Output 'Good luck and happy hacking!'
@@ -517,7 +539,7 @@ function Show-Menu {
     Write-Output '
 01) Run updates                         10) Configure remote desktop
 02) Enable automatic updates            11) Configure security policy
-03) Set UAC to highest
+03) Set UAC to highest                  12) Find/remove SMB shares
 04) Find/remove unauthorized users
 05) Add missing users
 06) Fix administrators
