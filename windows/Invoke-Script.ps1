@@ -513,12 +513,13 @@ $Menu = @{
     12 = {
         $Shares = Get-SmbShare | Select-Object -Property Name, Path | Where-Object { -not ($_.Name -in $SafeShares) }
         if ($Shares) {
-            Write-Output 'Non-default shares found!' $Shares
+            Write-Output 'Non-default shares found!'
+            Write-Output $Shares
             $Response = Get-Prompt 'File Shares' 'Remove all found shares?' 'Yes', 'No' 0 -StringReturn
             if ($Response -eq 'Yes') {
                 foreach ($Share in $Shares) {
                     Remove-SmbShare -Name $Share.Name
-                    Write-Output "Removed share $Share.Name"
+                    Write-Output "Removed share $($Share.Name)"
                 }
             }
             Write-Output 'Done listing shares!'
