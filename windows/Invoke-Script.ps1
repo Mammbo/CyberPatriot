@@ -514,7 +514,9 @@ $Menu = @{
         $Shares = Get-SmbShare | Select-Object -Property Name, Path | Where-Object { -not ($_.Name -in $SafeShares) }
         if ($Shares) {
             Write-Output 'Non-default shares found!'
-            Write-Output $Shares
+            foreach ($Share in $Shares) {
+                Write-Host "$($Share.Name)`t`t$($Share.Path)"
+            }
             $Response = Get-Prompt 'File Shares' 'Remove all found shares?' 'Yes', 'No' 0 -StringReturn
             if ($Response -eq 'Yes') {
                 foreach ($Share in $Shares) {
