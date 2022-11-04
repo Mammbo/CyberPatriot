@@ -24,6 +24,7 @@
 - [x] Run rkhunter
 - [x] Run clamav
 - [x] Find media files (videos, audio, images)
+- [x] List running services
 
 ## Not Managed By Script
 
