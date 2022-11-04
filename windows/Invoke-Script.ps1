@@ -25,10 +25,9 @@
 ### Self-elevate ###
 if (-not (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator') `
             -or (([Environment]::UserName) -eq "system"))) {
-    Start-Process powershell.exe '-Command', "cd $PWD; . '$PSCommandPath'" -Verb RunAs
+    Start-Process powershell.exe '-ExecutionPolicy', 'Bypass', '-Command', "cd $PWD; . '$PSCommandPath'" -Verb RunAs
     exit
 }
-
 
 # Function taken from https://gitlab.com/MysteryBlokHed/powershell-tools,
 # dual-licensed under the Apache 2.0 and MIT licenses
