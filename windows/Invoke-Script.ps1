@@ -400,14 +400,14 @@ $Menu = @{
     # Disable/enable user
     8  = {
         $Response = Get-Prompt 'Enable or disable user?' 'Enable', 'Disable' 1 -StringReturn
-        $User = Get-ReusedVar 'Username' ToDisable
+        Get-ReusedVar 'Username' ToDisable
 
         if ($Response -eq 'Enable') {
-            Enable-LocalUser -Name $User
+            Enable-LocalUser -Name $ToDisable
             Write-Output "User $User has been enabled!"
         }
         else {
-            Disable-LocalUser -Name $User
+            Disable-LocalUser -Name $ToDisable
             Write-Output "User $User has been disabled!"
         }
     }
