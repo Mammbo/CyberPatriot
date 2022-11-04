@@ -262,9 +262,9 @@ $PassMaxExp = 'MaximumPasswordAge\s+=\s+\d+'
 $PassMinExp = 'MinimumPasswordAge\s+=\s+\d+'
 $PassLenExp = 'MinimumPasswordLength\s+=\s+\d+'
 $PassComplexExp = 'PasswordComplexity\s+=\s+\d+'
-$LoginAttemptsExp = 'LockoutBadCount\s+=\s+\d+'
 $EnableAdminExp = 'EnableAdminAccount\s+=\s+\d+'
 $EnableGuestExp = 'EnableGuestAccount\s+=\s+\d+'
+$LoginAttemptsExp = 'LockoutBadCount\s+=\s+\d+'
 
 $Menu = @{
     # Run updates
@@ -488,13 +488,13 @@ $Menu = @{
         # since the config option is whether to *enable* them
 
         # Modify policy
-        $Policy = $Policy -replace $PassMaxExp, $PassMax
-        $Policy = $Policy -replace $PassMinExp, $PassMin
-        $Policy = $Policy -replace $PassLenExp, $PassLen
-        $Policy = $Policy -replace $PassComplexExp, $PassComplex
-        $Policy = $Policy -replace $EnableAdminExp, $LockAdmin
-        $Policy = $Policy -replace $EnableGuestExp, $LockGuest
-        $Policy = $Policy -replace $LoginAttemptsExp, $LoginAttempts
+        $Policy = $Policy -replace $PassMaxExp, "MaximumPasswordAge = $PassMax"
+        $Policy = $Policy -replace $PassMinExp, "MinimumPasswordAge = $PassMin"
+        $Policy = $Policy -replace $PassLenExp, "MinimumPasswordLength = $PassLen"
+        $Policy = $Policy -replace $PassComplexExp, "PasswordComplexity = $PassComplex"
+        $Policy = $Policy -replace $EnableAdminExp, "EnableAdminAccount = $LockAdmin"
+        $Policy = $Policy -replace $EnableGuestExp, "EnableGuestAccount = $LockGuest"
+        $Policy = $Policy -replace $LoginAttemptsExp, "LockoutBadCount = $LoginAttempts"
 
         # Write new policy
         $Policy | Out-File -Force 'cp-secpol-new.cfg'
