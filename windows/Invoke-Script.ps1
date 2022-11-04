@@ -139,6 +139,88 @@ function Get-Prompt {
     }
 }
 
+# Function taken from https://gitlab.com/MysteryBlokHed/powershell-tools,
+# dual-licensed under the Apache 2.0 and MIT licenses
+function Get-ReusedVar {
+    <#
+        .SYNOPSIS
+        Prompt the user for a variable while remembering the last value.
+
+        .DESCRIPTION
+        Provide a prompt to show to the user as well as the name of the variable to save to.
+        If the user provides a value, update the variable.
+        If the user provides nothing, use the existing value.
+        Returns the new value of the variable.
+        Be careful not to use the names of variables created inside this function for the -Name parameter.
+
+        .PARAMETER Prompt
+        The prompt to show the user.
+
+        .PARAMETER Name
+        The name of the variable to check/update.
+        The variable with this name is automatically modified based on the user's response.
+
+        .NOTES
+        Written by Adam Thompson-Sharpe.
+        Licensed under either of the Apache License, Version 2.0,
+        or the MIT license, at your option.
+
+        Source: <https://gitlab.com/MysteryBlokHed/powershell-tools>
+    #>
+    param(
+        [Parameter(Mandatory = $True, Position = 1)]
+        [string]$Prompt,
+        [Parameter(Mandatory = $True, Position = 2)]
+        [string]$Name
+    )
+
+    $Current = Get-Variable $Name -ValueOnly -ErrorAction SilentlyContinue
+    if ($Current) {
+        $Prompt += " [$Current]"
+    }
+
+    while ($True) {
+        $Value = Read-Host -Prompt $Prompt
+
+        if ($Value) {
+            Set-Variable $Name $Value -Visibility Public -Scope Global
+            break
+        }
+        else {
+            if (-not $Current) {
+                Write-Output 'A value must be provided!'
+            }
+            else {
+                break
+            }
+        }
+    }
+
+    return Get-Variable $Name -ValueOnly
+}
+
+function Get-NormalUsers {
+    <#
+        .SYNOPSIS
+        Get user accounts that are not built into Windows.
+    #>
+
+    return (Get-LocalUser).Name | Where-Object { -not ($_ -in $SafeUsers) }
+}
+
+function Get-UnsecureString {
+    <#
+        .SYNOPSIS
+        Convert a SecureString to a plaintext string.
+    #>
+    param(
+        [Parameter(Mandatory = $True, Position = 0)]
+        [securestring]$SecureString
+    )
+
+    return [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($SecureString))
+}
+
 Write-Output '
    ______      __
   / ____/_  __/ /_  ___  _____
@@ -158,9 +240,17 @@ Licensed under the GNU General Public License, Version 3.0
 
 Make sure to run this with administrator privileges!'
 
+# Users that probably won't be in the users file provided,
+# but that should be allowed on the system
+$SafeUsers = ('Administrator', 'DefaultAccount', 'Guest', 'WDAGUtilityAccount')
+
+$AUPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+
+$ToDisable = 'Guest'
+
 $Menu = @{
     # Run updates
-    '1'  = {
+    1  = {
         if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
             $Response = Get-Prompt 'Updates' 'Third-party PSWindowsUpdate module is not installed. Install to run updates programatically?' 'Yes', 'No' 0 -StringReturn
             if ($Response -eq 'Yes') {
@@ -187,24 +277,162 @@ $Menu = @{
     }
 
     # Enable automatic updates
-    '2'  = {
+    2  = {
         $WUSettings = (New-Object -com "Microsoft.Update.AutoUpdate").Settings
         $WUSettings.NotificationLevel = 4
         $WUSettings.save()
-        Write-Output 'Automatic updates enabled'
+        
+        # Registry values
+        Set-ItemProperty -Path $AUPath -Name 'NoAutoUpdate' -Value 0
+        Set-ItemProperty -Path $AUPath -Name 'AUOptions' -Value 4
+        Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallDay' -Value 0
+        Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallTime' -Value 0
+        Set-ItemProperty -Path $AUPath -Name 'NoAutoRebootWithLoggedOnUsers' -Value 1
+
+        Write-Output 'Automatic updates enabled!'
     }
 
     # Set UAC to highest
-    '3'  = {
+    3  = {
         $SystemPolicies = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
         Set-ItemProperty -Path $SystemPolicies -Name 'ConsentPromptBehaviorAdmin' -Value 2
         Set-ItemProperty -Path $SystemPolicies -Name 'PromptOnSecureDesktop' -Value 1
         Write-Output 'UAC set to highest'
     }
 
+    # Find/remove unauthorized users
+    4  = {
+        Get-ReusedVar 'Path to list of allowed usernames' UsersFile
+        $Users = Get-NormalUsers
+        $AllowedUsers = Get-Content $UsersFile
+        $Unauthorized = @()
+
+        foreach ($User in $Users) {
+            if (-not $User) { continue }
+            if (-not ($User -in $AllowedUsers)) {
+                Write-Output "Unauthorized user: $User"
+                $Unauthorized += $User
+            }
+        }
+
+        if ($Unauthorized) {
+            $Response = Get-Prompt 'Unauthorized users' 'Delete found users?' 'Yes', 'No' 0 -StringReturn
+            if ($Response -eq 'Yes') {
+                foreach ($User in $Unauthorized) {
+                    Write-Output "Deleting $User"
+                    Remove-LocalUser -Name $User
+                }
+            }
+        }
+
+        Write-Output 'Done!'
+    }
+
+    # Add missing users
+    5  = {
+        Get-ReusedVar 'Path to list of allowed usernames' UsersFile
+        $Users = Get-NormalUsers
+        $AllowedUsers = Get-Content $UsersFile
+
+        foreach ($User in $AllowedUsers) {
+            if (-not $User) { continue }
+            if (-not ($User -in $Users)) {
+                Write-Output "Adding missing user $User"
+                New-LocalUser $User -NoPassword
+            }
+        }
+
+        Write-Output 'Added missing users!'
+    }
+
+    # Fix administrators
+    6  = {
+        Get-ReusedVar 'Path to list of administrators' AdminFile
+        Get-ReusedVar 'Path to list of normal users' NormalFile
+        $Administrators = (Get-LocalGroupMember Administrators).Name | ForEach-Object { $_.Replace("$env:COMPUTERNAME\", '') }
+
+        $Admins = Get-Content $AdminFile
+        $Normal = Get-Content $NormalFile
+
+        Write-Output 'Ensuring admins are part of the Administrators group'
+
+        foreach ($User in $Admins) {
+            if (-not ($User -in $Administrators)) {
+                Write-Output "User $User doesn't have admin perms, fixing"
+                Add-LocalGroupMember -Name Administrators -Member $User
+            }
+        }
+
+        Write-Output 'Ensuring standard users are not part of the Administrators group'
+
+        foreach ($User in $Normal) {
+            if ($User -in $Administrators) {
+                Write-Output "User $User has admin perms and shouldn't, fixing"
+                Remove-LocalGroupMember -Name Administrators -Member $User
+            }
+        }
+
+        Write-Output 'Done fixing administrators!'
+    }
+
+    # Change all passwords
+    7  = {
+        $Users = Get-NormalUsers
+        Write-Output "Changing paswords for the following users:" $Users
+
+        while ($True) {
+            $NewPass = Read-Host -Prompt 'New password' -AsSecureString
+            $ConfirmNewPass = Read-Host -Prompt 'Confirm' -AsSecureString
+            if (-not ((Get-UnsecureString $NewPass) -ceq (Get-UnsecureString $ConfirmNewPass))) {
+                Write-Output 'Passwords do not match!'
+            }
+            else { break }
+        }
+
+        foreach ($User in $Users) {
+            Write-Output "Changing for $User..."
+            Set-LocalUser -Name $User -Password $NewPass
+        }
+
+        Write-Output 'Done changing passwords!'
+    }
+
+    # Disable/enable user
+    8  = {
+        $Response = Get-Prompt 'Enable or disable user?' 'Enable', 'Disable' 1 -StringReturn
+        Get-ReusedVar 'Username' ToDisable
+
+        if ($Response -eq 'Enable') {
+            Enable-LocalUser -Name $ToDisable
+            Write-Output "User $User has been enabled!"
+        }
+        else {
+            Disable-LocalUser -Name $ToDisable
+            Write-Output "User $User has been disabled!"
+        }
+    }
+
+    # Add new group
+    9  = {
+        $GroupName = Read-Host -Prompt 'New group to add'
+        New-LocalGroup $GroupName
+
+        $Response = Get-Prompt 'Add members to this group?' 'Yes', 'No' 0 -StringReturn
+        if ($Response -eq 'Yes') {
+            $Users = Read-Host -Prompt 'Users to add (space-separated)'
+            $Users = $Users.Split(' ')
+            foreach ($User in $Users) {
+                Add-LocalGroupMember -Name $GroupName -Member $User
+                Write-Output "Added $User to $GroupName"
+            }
+        }
+
+        Write-Output 'Done creating new group!'
+    }
+
     # Configure remote desktop
-    '4'  = {
-        $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Disable', 'Enable' 0 -StringReturn
+    10 = {
+        $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Enable', 'Disable' 1 -StringReturn
         $TerminalServer = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
 
         if ($Response -eq 'Disable') {
@@ -220,7 +448,7 @@ $Menu = @{
     }
 
     # Exit script
-    '99' = {
+    99 = {
         Write-Output 'Good luck and happy hacking!'
         exit
     }
@@ -228,14 +456,19 @@ $Menu = @{
 
 function Show-Menu {
     Write-Output '
-1) Run updates
-2) Enable automatic updates
-3) Set UAC to highest
-4) Configure remote desktop
+01) Run updates                         10) Configure remote desktop
+02) Enable automatic updates
+03) Set UAC to highest
+04) Find/remove unauthorized users
+05) Add missing users
+06) Fix administrators
+07) Change all passwords
+08) Enable/disable user
+09) Add new group
 
 99) Exit script'
 
-    $Option = Read-Host 'Option'
+    $Option = [int](Read-Host 'Option')
 
     if ($Menu[$Option]) { . $Menu[$Option] }
     else { Write-Output "Unknown option $Option" }
