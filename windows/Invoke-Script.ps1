@@ -459,7 +459,7 @@ $Menu = @{
         }
 
         if ($Unauthorized) {
-            $Response = Get-Prompt 'Unauthorized users' 'Delete found users?' 'Yes', 'No' 0 -StringReturn
+            $Response = Get-Prompt 'Unauthorized users' 'Delete found users?' 'Yes', 'No' 0 -StringReturn 'Delete listed users', 'Do nothing'
             if ($Response -eq 'Yes') {
                 foreach ($User in $Unauthorized) {
                     Write-Output "Deleting $User"
@@ -542,7 +542,8 @@ $Menu = @{
 
     # Disable/enable user
     8  = {
-        $Response = Get-Prompt 'Password Management' 'Enable or disable user?' 'Enable', 'Disable' 1 -StringReturn
+        $Response = Get-Prompt 'Password Management' 'Enable or disable user?' 'Enable', 'Disable' 1 -StringReturn `
+            'Enable the user (username will be entered after)', 'Disable the user (username will be entered after)'
         Get-ReusedVar 'Username' ToDisable
 
         if ($Response -eq 'Enable') {
@@ -560,7 +561,8 @@ $Menu = @{
         $GroupName = Read-Host -Prompt 'New group to add'
         New-LocalGroup $GroupName
 
-        $Response = Get-Prompt 'Group Management' 'Add members to this group?' 'Yes', 'No' 0 -StringReturn
+        $Response = Get-Prompt 'Group Management' 'Add members to this group?' 'Yes', 'No' 0 -StringReturn `
+            'Add members to the new group', 'Leave the new group empty'
         if ($Response -eq 'Yes') {
             $Users = Read-Host -Prompt 'Users to add (space-separated)'
             $Users = $Users.Split(' ')
@@ -575,7 +577,8 @@ $Menu = @{
 
     # Configure remote desktop
     10 = {
-        $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Enable', 'Disable' 1 -StringReturn
+        $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Enable', 'Disable' 1 -StringReturn `
+            'Allow remote desktop (registry and firewall)', 'Disable remote desktop (registry and firewall)'
         $TerminalServer = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
 
         if ($Response -eq 'Disable') {
@@ -644,7 +647,8 @@ $Menu = @{
             foreach ($Share in $Shares) {
                 Write-Host "$($Share.Name)`t`t$($Share.Path)"
             }
-            $Response = Get-Prompt 'File Shares' 'Remove all found shares?' 'Yes', 'No' 0 -StringReturn
+            $Response = Get-Prompt 'File Shares' 'Remove all found shares?' 'Yes', 'No' 0 -StringReturn `
+                'Remove the listed shares', 'Leave the listed shares alone'
             if ($Response -eq 'Yes') {
                 foreach ($Share in $Shares) {
                     Remove-SmbShare -Name $Share.Name -Force
