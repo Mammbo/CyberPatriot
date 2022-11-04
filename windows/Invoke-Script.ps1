@@ -754,6 +754,9 @@ $Menu = @{
         $DisplayUsernameLocked = Get-Prompt 'Interactive Logon' 'Display username when locked?' 'Yes', 'No' 1
         Get-ReusedVar 'Days to warn user before password expiry (0 to disable)' PassExpiryWarn
 
+        if ($DisplayUsernameLocked -eq 0) { $DisplayUsernameLocked = 1 }
+        else { $DisplayUsernameLocked = 3 }
+
         Set-ItemProperty -Path $SystemPath -Name 'DisableCAD' -Value $RequireCAD
         Set-ItemProperty -Path $SystemPath -Name 'DontDisplayLastUserName' -Value $DisplayUsernameLogon
         Set-ItemProperty -Path $SystemPath -Name 'DontDisplayLockedUserId' -Value $DisplayUsernameLocked
