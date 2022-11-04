@@ -275,17 +275,17 @@ $Menu = @{
         if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
             $Response = Get-Prompt 'Updates' 'Third-party PSWindowsUpdate module is not installed. Install to run updates programatically?' 'Yes', 'No' 0 -StringReturn
             if ($Response -eq 'Yes') {
-                Install-Module PSWindowsUpdate
+                Install-Module PSWindowsUpdate -Force
             }
         }
     
         # Run check again in case user decided not to install the package
         if (Get-Module -ListAvailable -Name PSWindowsUpdate) {
             Write-Output 'Checking for updates'
-            $Updates = Get-WindowsUpdate
+            $Updates = Get-WindowsUpdate -AcceptAll
             if ($Updates) {
                 Write-Output 'Updates found:' $Updates
-                Install-WindowsUpdate | Out-Null
+                Install-WindowsUpdate -AcceptAll | Out-Null
                 Write-Output 'Updates installed'
             }
             else {
@@ -520,7 +520,7 @@ $Menu = @{
             $Response = Get-Prompt 'File Shares' 'Remove all found shares?' 'Yes', 'No' 0 -StringReturn
             if ($Response -eq 'Yes') {
                 foreach ($Share in $Shares) {
-                    Remove-SmbShare -Name $Share.Name
+                    Remove-SmbShare -Name $Share.Name -Force
                     Write-Output "Removed share $($Share.Name)"
                 }
             }
