@@ -244,9 +244,27 @@ Make sure to run this with administrator privileges!'
 # but that should be allowed on the system
 $SafeUsers = ('Administrator', 'DefaultAccount', 'Guest', 'WDAGUtilityAccount')
 
+# Path to Automatic Updates in registry
 $AUPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
 
+# Account to disable
 $ToDisable = 'Guest'
+
+# Security policy
+$PassMin = '7'
+$PassMax = '90'
+$PassLen = '8'
+$LoginAttempts = '10'
+
+### Regular expressions ###
+# Security policy
+$PassMaxExp = 'MaximumPasswordAge\s+=\s+\d+'
+$PassMinExp = 'MinimumPasswordAge\s+=\s+\d+'
+$PassLenExp = 'MinimumPasswordLength\s+=\s+\d+'
+$PassComplexExp = 'PasswordComplexity\s+=\s+\d+'
+$LoginAttemptsExp = 'LockoutBadCount\s+=\s+\d+'
+$EnableAdminExp = 'EnableAdminAccount\s+=\s+\d+'
+$EnableGuestExp = 'EnableGuestAccount\s+=\s+\d+'
 
 $Menu = @{
     # Run updates
@@ -447,6 +465,45 @@ $Menu = @{
         }
     }
 
+    # Configure security policy
+    11 = {
+        # Export current policy
+        SecEdit.exe /export /cfg 'cp-secpol.cfg' | Out-Null
+        (Get-Item 'cp-secpol.cfg').Attributes += 'Hidden'
+        $Policy = Get-Content -Raw 'cp-secpol.cfg'
+
+        # Ask user how to configure policy
+        Get-ReusedVar 'Max password age' PassMax
+        Get-ReusedVar 'Minimum password age' PassMin
+        Get-ReusedVar 'Minimum password length' PassLen
+        $PassComplex = Get-Prompt 'Security Policy' 'Enforce password complexity?' 'Yes', 'No' 0
+        $LockAdmin = Get-Prompt 'Security Policy' 'Lock administrator account?' 'Yes', 'No' 0
+        $LockGuest = Get-Prompt 'Security Policy' 'Lock guest account?' 'Yes', 'No' 0
+        Get-ReusedVar 'Max login attempts before lockout' LoginAttempts
+
+        if ($PassComplex -eq 0) { $PassComplex = 1 }
+        else { $PassComplex = 0 }
+
+        # $LockAdmin and $LockGuest shouldn't be flipped,
+        # since the config option is whether to *enable* them
+
+        # Modify policy
+        $Policy = $Policy -replace $PassMaxExp, $PassMax
+        $Policy = $Policy -replace $PassMinExp, $PassMin
+        $Policy = $Policy -replace $PassLenExp, $PassLen
+        $Policy = $Policy -replace $PassComplexExp, $PassComplex
+        $Policy = $Policy -replace $EnableAdminExp, $LockAdmin
+        $Policy = $Policy -replace $EnableGuestExp, $LockGuest
+        $Policy = $Policy -replace $LoginAttemptsExp, $LoginAttempts
+
+        # Write new policy
+        $Policy | Out-File -Force 'cp-secpol.cfg'
+        SecEdit.exe /configure /db 'c:\windows\security\local.sdb' /cfg 'cp-secpol.cfg' /areas SECURITYPOLICY
+        Remove-Item 'cp-secpol.cfg' -Force -Confirm $False
+
+        Write-Output 'Security policy updated!'
+    }
+
     # Exit script
     99 = {
         Write-Output 'Good luck and happy hacking!'
@@ -457,7 +514,7 @@ $Menu = @{
 function Show-Menu {
     Write-Output '
 01) Run updates                         10) Configure remote desktop
-02) Enable automatic updates
+02) Enable automatic updates            11) Configure security policy
 03) Set UAC to highest
 04) Find/remove unauthorized users
 05) Add missing users
