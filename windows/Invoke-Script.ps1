@@ -684,10 +684,33 @@ $Menu = @{
         Write-Output "Found $((Get-Content $FoundMediaFile).Length) media files!"
     }
 
-    # Enable firewall
+    # Configure firewall
     15 = {
-        Set-NetFirewallProfile -Profile Domain, Public, Private -Enabled True
-        Write-Output 'Firewall enabled!'
+        $Response = Get-Prompt 'Windows Firewall' 'Enable or disable firewall?' 'Enable', 'Disable' 0 -StringReturn
+        if ($Response -eq 'Enable') {
+            Set-NetFirewallProfile -Profile Domain, Public, Private -Enabled True
+            Write-Output 'Firewall enabled'
+            $Response = Get-Prompt 'Windows Firewall' 'Configure settings now?' 'Yes', 'No' 0 -StringReturn
+            $ToConfigure = Read-Host -Prompt 'Which profiles to configure? (Space-separated list; Public, Domain, and/or Private)'
+            $ToConfigure = $ToConfigure.Split(' ') | Where-Object { $_.ToLower() -in ('Public', 'Domain', 'Private') }
+            if ($Response -eq 'Yes') {
+                $BlockInbound = Get-Prompt 'What to do with inbound connections by default?' 'Allow', 'Block' 1 -StringReturn
+                $BlockOutbound = Get-Prompt 'What to do with outbound connections by default?' 'Allow', 'Block' 0 -StringReturn
+                $LogAllowed = Get-Prompt 'Log allowed connections?' 'True', 'False' 1 -StringReturn
+                $LogBlocked = Get-Prompt 'Log blocked connections?' 'True', 'False' 0 -StringReturn
+
+                Set-NetFirewallProfile -Profile $ToConfigure -DefaultInboundAction $BlockInbound
+                Set-NetFirewallProfile -Profile $ToConfigure -DefaultOutboundAction $BlockOutbound
+                Set-NetFirewallProfile -Profile $ToConfigure -LogAllowed $LogAllowed
+                Set-NetFirewallProfile -Profile $ToConfigure -LogBlocked $LogBlocked
+            }
+        }
+        else {
+            Set-NetFirewallProfile -Profile Domain, Public, Private -Enabled False
+            Write-Output 'Firewall disabled'
+        }
+
+        Write-Output 'Done configuring firewall!'
     }
 
     # Exit script
@@ -704,7 +727,7 @@ function Show-Menu {
 03) Set UAC to highest                  12) List/remove SMB shares
 04) Find/remove unauthorized users      13) List services
 05) Add missing users                   14) List media files
-06) Fix administrators                  15) Enable firewall
+06) Fix administrators                  15) Configure firewall
 07) Change all passwords
 08) Enable/disable user
 09) Add new group
