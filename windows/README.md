@@ -20,6 +20,8 @@ Currently applies to both Windows 10 and Windows Server.
 - [x] Enable/disable accounts
 - [x] Add missing groups
 - [x] Enable/disable remote desktop
+- [x] Configure security policy
+- [x] List/remove SMB shares
 
 ## Not Managed By Script
 
