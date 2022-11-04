@@ -156,7 +156,6 @@ function Get-ReusedVar {
         Provide a prompt to show to the user as well as the name of the variable to save to.
         If the user provides a value, update the variable.
         If the user provides nothing, use the existing value.
-        Returns the new value of the variable.
         Be careful not to use the names of variables created inside this function for the -Name parameter.
 
         .PARAMETER Prompt
@@ -165,6 +164,9 @@ function Get-ReusedVar {
         .PARAMETER Name
         The name of the variable to check/update.
         The variable with this name is automatically modified based on the user's response.
+
+        .PARAMETER ReturnValue
+        Return the variable's value instead of returning nothing.
 
         .NOTES
         Written by Adam Thompson-Sharpe.
@@ -177,7 +179,8 @@ function Get-ReusedVar {
         [Parameter(Mandatory = $True, Position = 1)]
         [string]$Prompt,
         [Parameter(Mandatory = $True, Position = 2)]
-        [string]$Name
+        [string]$Name,
+        [switch]$ReturnValue
     )
 
     $Current = Get-Variable $Name -ValueOnly -ErrorAction SilentlyContinue
@@ -202,7 +205,7 @@ function Get-ReusedVar {
         }
     }
 
-    return Get-Variable $Name -ValueOnly
+    if ($ReturnValue) { return Get-Variable $Name -ValueOnly }
 }
 
 function Get-NormalUsers {
