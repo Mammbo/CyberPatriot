@@ -613,7 +613,7 @@ $Menu = @{
     11 = {
         # Export current policy
         SecEdit.exe /export /cfg 'cp-secpol.cfg' | Out-Null
-        (Get-Item 'cp-secpol.cfg').Attributes += 'Hidden'
+        (Get-Item 'cp-secpol.cfg' -Force).Attributes += 'Hidden'
         $Policy = Get-Content -Raw 'cp-secpol.cfg'
 
         # Ask user how to configure policy
@@ -649,7 +649,7 @@ $Menu = @{
 
         # Write new policy
         $Policy | Out-File -Force 'cp-secpol-new.cfg'
-        (Get-Item 'cp-secpol-new.cfg').Attributes += 'Hidden'
+        (Get-Item 'cp-secpol-new.cfg' -Force).Attributes += 'Hidden'
         SecEdit.exe /configure /db 'c:\windows\security\local.sdb' /cfg 'cp-secpol-new.cfg' /areas SECURITYPOLICY
         Remove-Item 'cp-secpol.cfg' -Force
         Remove-Item 'cp-secpol-new.cfg' -Force
