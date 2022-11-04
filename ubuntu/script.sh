@@ -108,7 +108,7 @@ high_perm_root='/'
 
 sudo_group='sudo'
 
-bad_software='aircrack-ng deluge hashcat hydra john kismet nmap openvpn qbittorrent telnet wireguard zenmap'
+bad_software='aircrack-ng deluge gameconqueror hashcat hydra john kismet nmap openvpn qbittorrent telnet wireguard zenmap'
 
 # Password expiry settings
 pass_max='90'
