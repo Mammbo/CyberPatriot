@@ -611,6 +611,15 @@ $Menu = @{
 
     # Configure security policy
     11 = {
+        $MMC = Get-Process 'mmc' -ErrorAction SilentlyContinue
+        if ($MMC) {
+            $Response = Get-Prompt 'Security Policy' 'MMC windows (eg. the group policy editor) must be closed before changes can be made. Close them now?' `
+                'Yes', 'No' 0 -StringReturn `
+                'Close MMC processes', "Don't close and exit"
+            if ($Response -eq 'Yes') { $MMC | Stop-Process }
+            else { exit }
+        }
+
         # Export current policy
         SecEdit.exe /export /cfg 'cp-secpol.cfg' | Out-Null
         (Get-Item 'cp-secpol.cfg' -Force).Attributes += 'Hidden'
