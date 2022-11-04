@@ -259,7 +259,7 @@ $SafeShares = ('ADMIN$', 'C$', 'IPC$')
 ### Registry paths ###
 $WindowsUpdatePath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate'
 $AUPath = "$WindowsUpdatePath\AU"
-$SecurityPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+$SystemPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
 $WinlogonPath = 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon'
 
 # Account to disable
@@ -750,11 +750,13 @@ $Menu = @{
     # Configure interactive logon policies
     16 = {
         $RequireCAD = Get-Prompt 'Interactive Logon' 'Require Ctrl+Alt+Delete for logon?' 'Yes', 'No' 0
-        $DisplayUsername = Get-Prompt 'Interactive Logon' 'Display username at logon?' 'Yes', 'No' 1
+        $DisplayUsernameLogon = Get-Prompt 'Interactive Logon' 'Display username at logon?' 'Yes', 'No' 1
+        $DisplayUsernameLocked = Get-Prompt 'Interactive Logon' 'Display username when locked?' 'Yes', 'No' 1
         Get-ReusedVar 'Days to warn user before password expiry (0 to disable)' PassExpiryWarn
 
-        Set-ItemProperty -Path $SecurityPath -Name 'DisableCAD' -Value $RequireCAD
-        Set-ItemProperty -Path $SecurityPath -Name 'DontDisplayLastUserName' -Value $DisplayUsername
+        Set-ItemProperty -Path $SystemPath -Name 'DisableCAD' -Value $RequireCAD
+        Set-ItemProperty -Path $SystemPath -Name 'DontDisplayLastUserName' -Value $DisplayUsernameLogon
+        Set-ItemProperty -Path $SystemPath -Name 'DontDisplayLockedUserId' -Value $DisplayUsernameLocked
         Set-ItemProperty -Path $WinlogonPath -Name 'PasswordExpiryWarning' -Value $PassExpiryWarn
 
         Write-Output 'Done configuring interactive logon policies!'
