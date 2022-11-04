@@ -515,7 +515,7 @@ $Menu = @{
         Write-Output 'Security policy updated!'
     }
 
-    # Find/remove SMB shares
+    # List/remove SMB shares
     12 = {
         $Shares = Get-SmbShare | Select-Object -Property Name, Path | Where-Object { -not ($_.Name -in $SafeShares) }
         if ($Shares) {
@@ -537,6 +537,16 @@ $Menu = @{
         }
     }
 
+    # List services
+    13 = {
+        $Services = Get-Service
+        $Response = Get-Prompt 'Services' 'Only show running services?' 'Yes', 'No' 0 -StringReturn
+        if ($Response -eq 'Yes') {
+            $Services = $Services | Where-Object { $_.Status -eq 'Running' }
+        }
+        Write-Output $Services
+    }
+
     # Exit script
     99 = {
         Write-Output 'Good luck and happy hacking!'
@@ -548,8 +558,8 @@ function Show-Menu {
     Write-Output '
 01) Run updates                         10) Configure remote desktop
 02) Enable automatic updates            11) Configure security policy
-03) Set UAC to highest                  12) Find/remove SMB shares
-04) Find/remove unauthorized users
+03) Set UAC to highest                  12) List/remove SMB shares
+04) Find/remove unauthorized users      13) List services
 05) Add missing users
 06) Fix administrators
 07) Change all passwords

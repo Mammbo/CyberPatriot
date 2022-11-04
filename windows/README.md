@@ -22,6 +22,7 @@ Currently applies to both Windows 10 and Windows Server.
 - [x] Enable/disable remote desktop
 - [x] Configure security policy
 - [x] List/remove SMB shares
+- [x] List running services
 
 ## Not Managed By Script
 
