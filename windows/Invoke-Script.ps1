@@ -712,10 +712,10 @@ $Menu = @{
             $ToConfigure = Read-Host -Prompt 'Which profiles to configure? (Space-separated list; Public, Domain, and/or Private)'
             $ToConfigure = $ToConfigure.Split(' ') | Where-Object { $_.ToLower() -in ('Public', 'Domain', 'Private') }
             if ($Response -eq 'Yes') {
-                $BlockInbound = Get-Prompt 'What to do with inbound connections by default?' 'Allow', 'Block' 1 -StringReturn
-                $BlockOutbound = Get-Prompt 'What to do with outbound connections by default?' 'Allow', 'Block' 0 -StringReturn
-                $LogAllowed = Get-Prompt 'Log allowed connections?' 'True', 'False' 1 -StringReturn
-                $LogBlocked = Get-Prompt 'Log blocked connections?' 'True', 'False' 0 -StringReturn
+                $BlockInbound = Get-Prompt 'Windows Firewall' 'What to do with inbound connections by default?' 'Allow', 'Block' 1 -StringReturn
+                $BlockOutbound = Get-Prompt 'Windows Firewall' 'What to do with outbound connections by default?' 'Allow', 'Block' 0 -StringReturn
+                $LogAllowed = Get-Prompt 'Windows Firewall' 'Log allowed connections?' 'True', 'False' 1 -StringReturn
+                $LogBlocked = Get-Prompt 'Windows Firewall' 'Log blocked connections?' 'True', 'False' 0 -StringReturn
 
                 Set-NetFirewallProfile -Profile $ToConfigure -DefaultInboundAction $BlockInbound
                 Set-NetFirewallProfile -Profile $ToConfigure -DefaultOutboundAction $BlockOutbound
