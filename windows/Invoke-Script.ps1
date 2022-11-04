@@ -25,7 +25,7 @@
 ### Self-elevate ###
 if (-not (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]'Administrator') `
             -or (([Environment]::UserName) -eq "system"))) {
-    Start-Process powershell.exe '-File', $PSCommandPath, '' -Verb RunAs 
+    Start-Process powershell.exe '-Command', "cd $PWD; . '$PSCommandPath'" -Verb RunAs
     exit
 }
 
@@ -265,6 +265,121 @@ $PassMin = '7'
 $PassMax = '90'
 $PassLen = '8'
 $LoginAttempts = '10'
+
+$FoundMediaFile = 'media.log'
+
+# Media file extensions
+# Mostly from various Wikipedia pages' tables of extensions
+# There are probably far more extensions than really necessary here,
+# might be worth going through by hand at some point to see what can be removed
+$MediaFilesRaw = (
+    # Audio formats
+    'aa',
+    'aac',
+    'aax',
+    'act',
+    'aif',
+    'aiff',
+    'alac',
+    'amr',
+    'ape',
+    'au',
+    'awb',
+    'dss',
+    'dvf',
+    'flac',
+    'gsm',
+    'iklax',
+    'ivs',
+    'm4a',
+    'm4b',
+    'mmf',
+    'mp3',
+    'mpc',
+    'msv',
+    'nmf',
+    'ogg',
+    'oga',
+    'mogg',
+    'opus',
+    'ra',
+    'raw',
+    'rf64',
+    'sln',
+    'tta',
+    'voc',
+    'vox',
+    'wav',
+    'wma',
+    'wv',
+    '8svx',
+    'cda',
+    # Video formats
+    'webm',
+    'mkv',
+    'flv',
+    'vob',
+    'ogv',
+    'ogg',
+    'drc',
+    'gif',
+    'gifv',
+    'mng',
+    'avi',
+    'mts',
+    'm2ts',
+    'mov',
+    'qt',
+    'wmv',
+    'yuv',
+    'rm',
+    'rmvb',
+    'viv',
+    'asf',
+    'amv',
+    'mp4',
+    'm4p',
+    'm4v',
+    'mpg',
+    'mp2',
+    'mpeg',
+    'mpe',
+    'mpv',
+    'm2v',
+    'svi',
+    '3gp',
+    '3g2',
+    'mxf',
+    'roq',
+    'nsv',
+    'f4v',
+    'f4p',
+    'f4a',
+    'f4b',
+    # Picture formats
+    'png',
+    'jpg',
+    'jpeg',
+    'jfif',
+    'exif',
+    'tif',
+    'tiff',
+    'gif',
+    'bmp',
+    'ppm',
+    'pgm',
+    'pbm',
+    'pnm',
+    'webp',
+    'heif',
+    'avif',
+    'ico',
+    'tga',
+    'psd',
+    'xcf'
+)
+
+$MediaFiles = $MediaFilesRaw | ForEach-Object { "*.$_" }
 
 ### Regular expressions ###
 # Security policy
@@ -554,6 +669,18 @@ $Menu = @{
         Write-Output $Services
     }
 
+    # List media files
+    14 = {
+        Get-ReusedVar 'Output file' FoundMediaFile
+        Get-ReusedVar 'Path to search' MediaPath
+
+        Get-ChildItem -Path $MediaPath -Include $MediaFiles -Recurse -File `
+        | ForEach-Object { $_.FullName } `
+        | Out-File $FoundMediaFile
+
+        Write-Output "Found $((Get-Content $FoundMediaFile).Length) media files!"
+    }
+
     # Exit script
     99 = {
         Write-Output 'Good luck and happy hacking!'
@@ -567,7 +694,7 @@ function Show-Menu {
 02) Enable automatic updates            11) Configure security policy
 03) Set UAC to highest                  12) List/remove SMB shares
 04) Find/remove unauthorized users      13) List services
-05) Add missing users
+05) Add missing users                   14) List media files
 06) Fix administrators
 07) Change all passwords
 08) Enable/disable user
