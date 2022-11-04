@@ -119,6 +119,8 @@ pass_warn='7'
 clamscan_path='/'
 clamscan_logs='clamav.log'
 
+found_media_file='media.log'
+
 # Media file extensions
 # Mostly from various Wikipedia pages' tables of extensions
 # There are probably far more extensions than really necessary here,
