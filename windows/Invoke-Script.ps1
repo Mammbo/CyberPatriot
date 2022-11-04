@@ -684,6 +684,12 @@ $Menu = @{
         Write-Output "Found $((Get-Content $FoundMediaFile).Length) media files!"
     }
 
+    # Enable firewall
+    15 = {
+        Set-NetFirewallProfile -Profile Domain, Public, Private -Enabled True
+        Write-Output 'Firewall enabled!'
+    }
+
     # Exit script
     99 = {
         Write-Output 'Good luck and happy hacking!'
@@ -698,7 +704,7 @@ function Show-Menu {
 03) Set UAC to highest                  12) List/remove SMB shares
 04) Find/remove unauthorized users      13) List services
 05) Add missing users                   14) List media files
-06) Fix administrators
+06) Fix administrators                  15) Enable firewall
 07) Change all passwords
 08) Enable/disable user
 09) Add new group

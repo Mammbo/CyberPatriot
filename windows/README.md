@@ -31,6 +31,7 @@ Currently applies to both Windows 10 and Windows Server.
 - [x] List/remove SMB shares
 - [x] List running services
 - [x] List media files
+- [x] Enable firewall
 
 ## Not Managed By Script
 
