@@ -23,6 +23,7 @@ Currently applies to both Windows 10 and Windows Server.
 - [x] Configure security policy
 - [x] List/remove SMB shares
 - [x] List running services
+- [x] List media files
 
 ## Not Managed By Script
 
