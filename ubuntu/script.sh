@@ -687,7 +687,9 @@ function menu {
 
         # List services
         19)
-            systemctl list-units --type=service --state=active
+            prompt 'Only show active services?' 'y'
+            if [ $? = 1 ]; then systemctl list-units --type=service --state=active
+            else systemctl list-units --type=service; fi
             ;;
 
         # Exit
