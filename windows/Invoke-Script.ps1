@@ -268,6 +268,7 @@ $PassComplexExp = 'PasswordComplexity\s+=\s+\d+'
 $EnableAdminExp = 'EnableAdminAccount\s+=\s+\d+'
 $EnableGuestExp = 'EnableGuestAccount\s+=\s+\d+'
 $LoginAttemptsExp = 'LockoutBadCount\s+=\s+\d+'
+$LimitBlankExp = 'MACHINE\\System\\CurrentControlSet\\Control\\Lsa\\LimitBlankPasswordUse\s*=\s*\d+,\d+'
 
 $Menu = @{
     # Run updates
@@ -483,9 +484,13 @@ $Menu = @{
         $LockAdmin = Get-Prompt 'Security Policy' 'Lock administrator account?' 'Yes', 'No' 0
         $LockGuest = Get-Prompt 'Security Policy' 'Lock guest account?' 'Yes', 'No' 0
         Get-ReusedVar 'Max login attempts before lockout' LoginAttempts
+        $LimitBlank = Get-Prompt 'Security Policy' 'Prevent remote access with blank passwords?' 'Yes', 'No' 0
 
         if ($PassComplex -eq 0) { $PassComplex = 1 }
         else { $PassComplex = 0 }
+
+        if ($LimitBlank -eq 0) { $LimitBlank = 1 }
+        else { $LimitBlank = 0 }
 
         # $LockAdmin and $LockGuest shouldn't be flipped,
         # since the config option is whether to *enable* them
@@ -498,6 +503,7 @@ $Menu = @{
         $Policy = $Policy -replace $EnableAdminExp, "EnableAdminAccount = $LockAdmin"
         $Policy = $Policy -replace $EnableGuestExp, "EnableGuestAccount = $LockGuest"
         $Policy = $Policy -replace $LoginAttemptsExp, "LockoutBadCount = $LoginAttempts"
+        $Policy = $Policy -replace $LimitBlankExp, "MACHINE\System\CurrentControlSet\Control\Lsa\LimitBlankPasswordUse=4,$LimitBlank"
 
         # Write new policy
         $Policy | Out-File -Force 'cp-secpol-new.cfg'
