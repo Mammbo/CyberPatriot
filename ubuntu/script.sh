@@ -662,8 +662,12 @@ function menu {
             fi
 
             apt-get install clamav -y
-            systemctl enable clamav-freshclam
-            systemctl start clamav-freshclam
+
+            prompt 'Enable freshclam service? (Only needs to be done once)' 'n'
+            if [ $? = 1 ]; then
+                systemctl enable clamav-freshclam
+                systemctl start clamav-freshclam
+            fi
 
             clamscan "$clamscan_path" ${clamscan_params[@]}
             ;;
