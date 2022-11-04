@@ -412,6 +412,24 @@ $Menu = @{
         }
     }
 
+    # Add new group
+    9  = {
+        $GroupName = Read-Host -Prompt 'New group to add'
+        New-LocalGroup $GroupName
+
+        $Response = Get-Prompt 'Add members to this group?' 'Yes', 'No' 0 -StringReturn
+        if ($Response -eq 'Yes') {
+            $Users = Read-Host -Prompt 'Users to add (space-separated)'
+            $Users = $Users.Split(' ')
+            foreach ($User in $Users) {
+                Add-LocalGroupMember -Name $GroupName -Member $User
+                Write-Output "Added $User to $GroupName"
+            }
+        }
+
+        Write-Output 'Done creating new group!'
+    }
+
     # Configure remote desktop
     10 = {
         $Response = Get-Prompt 'Remote Desktop' 'Disable or enable remote desktop?' 'Enable', 'Disable' 1 -StringReturn
