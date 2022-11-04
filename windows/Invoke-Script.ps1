@@ -324,7 +324,7 @@ $Menu = @{
 
     # Find/remove unauthorized users
     4  = {
-        Get-ReusedVar 'Path to list of allowed usernames' UsersFile
+        Get-ReusedVar 'Path to list of allowed usernames (normal users and admins)' UsersFile
         $Users = Get-NormalUsers
         $AllowedUsers = Get-Content $UsersFile
         $Unauthorized = @()
@@ -352,7 +352,7 @@ $Menu = @{
 
     # Add missing users
     5  = {
-        Get-ReusedVar 'Path to list of allowed usernames' UsersFile
+        Get-ReusedVar 'Path to list of allowed usernames (normal users and admins)' UsersFile
         $Users = Get-NormalUsers
         $AllowedUsers = Get-Content $UsersFile
 

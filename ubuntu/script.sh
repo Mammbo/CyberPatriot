@@ -323,7 +323,7 @@ function menu {
 
         # Find and remove unauthorized users
         4)
-            reprompt_var 'Path to list of allowed usernames' users_file
+            reprompt_var 'Path to list of allowed usernames (normal users and admins)' users_file
             users_file="$reprompt_value"
             get_users
 
@@ -352,7 +352,7 @@ function menu {
 
         # Add missing users
         5)
-            reprompt_var 'Path to list of allowed usernames' users_file
+            reprompt_var 'Path to list of allowed usernames (normal users and admins)' users_file
             users_file="$reprompt_value"
             get_users
 
