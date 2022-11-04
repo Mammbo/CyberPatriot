@@ -497,9 +497,11 @@ $Menu = @{
         $Policy = $Policy -replace $LoginAttemptsExp, $LoginAttempts
 
         # Write new policy
-        $Policy | Out-File -Force 'cp-secpol.cfg'
+        $Policy | Out-File -Force 'cp-secpol-new.cfg'
+        (Get-Item 'cp-secpol.cfg').Attributes += 'Hidden'
         SecEdit.exe /configure /db 'c:\windows\security\local.sdb' /cfg 'cp-secpol.cfg' /areas SECURITYPOLICY
-        Remove-Item 'cp-secpol.cfg' -Force -Confirm $False
+        Remove-Item 'cp-secpol.cfg' -Force
+        Remove-Item 'cp-secpol-new.cfg' -Force
 
         Write-Output 'Security policy updated!'
     }
