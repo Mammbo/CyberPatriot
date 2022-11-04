@@ -382,7 +382,7 @@ function menu {
             echo 'Ensuring admins are part of the sudo group'
 
             while IFS= read -r admin || [ -n "$admin" ]; do
-                if ! [ "$user" ]; then continue; fi
+                if ! [ "$admin" ]; then continue; fi
                 if ! id -nG "$admin" | grep -qw "$sudo_group"; then
                     echo "User $admin doesn't have admin perms, fixing"
                     usermod -aG "$sudo_group" "$admin"
@@ -392,7 +392,7 @@ function menu {
             echo 'Ensuring standard users are not part of the sudo group'
 
             while IFS= read -r normal || [ -n "$normal" ]; do
-                if ! [ "$user" ]; then continue; fi
+                if ! [ "$normal" ]; then continue; fi
                 if id -nG "$normal" | grep -qw "$sudo_group"; then
                     echo "User $normal has admin perms and shouldn't, fixing"
                     gpasswd --delete "$normal" "$sudo_group"
