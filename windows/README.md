@@ -32,6 +32,7 @@ Currently applies to both Windows 10 and Windows Server.
 - [x] List running services
 - [x] List media files
 - [x] Configure firewall
+- [x] Confire interactive logon policies
 
 ## Not Managed By Script
 

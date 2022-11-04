@@ -259,6 +259,8 @@ $SafeShares = ('ADMIN$', 'C$', 'IPC$')
 ### Registry paths ###
 $WindowsUpdatePath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate'
 $AUPath = "$WindowsUpdatePath\AU"
+$SecurityPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
+$WinlogonPath = 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon'
 
 # Account to disable
 $ToDisable = 'Guest'
@@ -268,6 +270,8 @@ $PassMin = '7'
 $PassMax = '90'
 $PassLen = '8'
 $LoginAttempts = '10'
+
+$PassExpiryWarn = '7'
 
 $FoundMediaFile = 'media.log'
 
@@ -743,6 +747,19 @@ $Menu = @{
         Write-Output 'Done configuring firewall!'
     }
 
+    # Configure interactive logon policies
+    16 = {
+        $RequireCAD = Get-Prompt 'Interactive Logon' 'Require Ctrl+Alt+Delete for logon?' 'Yes', 'No' 0
+        $DisplayUsername = Get-Prompt 'Interactive Logon' 'Display username at logon?' 'Yes', 'No' 1
+        Get-ReusedVar 'Days to warn user before password expiry (0 to disable)' PassExpiryWarn
+
+        Set-ItemProperty -Path $SecurityPath -Name 'DisableCAD' -Value $RequireCAD
+        Set-ItemProperty -Path $SecurityPath -Name 'DontDisplayLastUserName' -Value $DisplayUsername
+        Set-ItemProperty -Path $WinlogonPath -Name 'PasswordExpiryWarning' -Value $PassExpiryWarn
+
+        Write-Output 'Done configuring interactive logon policies!'
+    }
+
     # Exit script
     99 = {
         Write-Output 'Good luck and happy hacking!'
@@ -758,7 +775,7 @@ function Show-Menu {
 04) Find/remove unauthorized users      13) List services
 05) Add missing users                   14) List media files
 06) Fix administrators                  15) Configure firewall
-07) Change all passwords
+07) Change all passwords                16) Configure interactive logon policies
 08) Enable/disable user
 09) Add new group
 
