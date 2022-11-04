@@ -256,8 +256,9 @@ $SafeUsers = ('Administrator', 'DefaultAccount', 'Guest', 'WDAGUtilityAccount')
 # Shares available by default
 $SafeShares = ('ADMIN$', 'C$', 'IPC$')
 
-# Path to Automatic Updates in registry
-$AUPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+### Registry paths ###
+$WindowsUpdatePath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate'
+$AUPath = "$WindowsUpdatePath\AU"
 
 # Account to disable
 $ToDisable = 'Guest'
@@ -393,6 +394,7 @@ $EnableAdminExp = 'EnableAdminAccount\s+=\s+\d+'
 $EnableGuestExp = 'EnableGuestAccount\s+=\s+\d+'
 $LoginAttemptsExp = 'LockoutBadCount\s+=\s+\d+'
 $LimitBlankExp = 'MACHINE\\System\\CurrentControlSet\\Control\\Lsa\\LimitBlankPasswordUse\s*=\s*\d+,\d+'
+$DisallowPlaintextExp = 'MACHINE\\System\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters\\EnablePlainTextPassword\s*=\s*\d+,\d+'
 
 $Menu = @{
     # Run updates
@@ -428,12 +430,23 @@ $Menu = @{
         $WUSettings.NotificationLevel = 4
         $WUSettings.save()
         
-        # Registry values
+        # Turn on auto update
         Set-ItemProperty -Path $AUPath -Name 'NoAutoUpdate' -Value 0
         Set-ItemProperty -Path $AUPath -Name 'AUOptions' -Value 4
         Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallDay' -Value 0
         Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallTime' -Value 0
-        Set-ItemProperty -Path $AUPath -Name 'NoAutoRebootWithLoggedOnUsers' -Value 1
+        Set-ItemProperty -Path $AUPath -Name 'AllowMUUpdateService' -Value 1
+        Set-ItemProperty -Path $AUPath -Name 'AutomaticMaintenanceEnabled' -Value 1
+        # Include other software with updates (NOT feature updates)
+        Set-ItemProperty -Path $AUPath -Name 'IncludeRecommendedUpdates' -Value 1
+        # Make sure the checks run daily
+        Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallEveryWeek' -Value 0
+        Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallFirstWeek' -Value 0
+        Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallSecondWeek' -Value 0
+        Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallThirdWeek' -Value 0
+        Set-ItemProperty -Path $AUPath -Name 'ScheduledInstallFourthWeek' -Value 0
+        # Enable updates through UI
+        Set-ItemProperty -Path $WindowsUpdatePath -Name 'SetDisableUXWUAccess' -Value 0
 
         Write-Output 'Automatic updates enabled!'
     }
@@ -612,6 +625,7 @@ $Menu = @{
         $LockGuest = Get-Prompt 'Security Policy' 'Lock guest account?' 'Yes', 'No' 0
         Get-ReusedVar 'Max login attempts before lockout' LoginAttempts
         $LimitBlank = Get-Prompt 'Security Policy' 'Prevent remote access with blank passwords?' 'Yes', 'No' 0
+        $DisallowPlaintext = Get-Prompt 'Security Policy' 'Disallow plaintext ("reversible encryption") passwords?' 'Yes', 'No' 0
 
         if ($PassComplex -eq 0) { $PassComplex = 1 }
         else { $PassComplex = 0 }
@@ -619,7 +633,7 @@ $Menu = @{
         if ($LimitBlank -eq 0) { $LimitBlank = 1 }
         else { $LimitBlank = 0 }
 
-        # $LockAdmin and $LockGuest shouldn't be flipped,
+        # $LockAdmin, $LockGuest, and $DisallowPlaintext shouldn't be flipped,
         # since the config option is whether to *enable* them
 
         # Modify policy
@@ -631,6 +645,7 @@ $Menu = @{
         $Policy = $Policy -replace $EnableGuestExp, "EnableGuestAccount = $LockGuest"
         $Policy = $Policy -replace $LoginAttemptsExp, "LockoutBadCount = $LoginAttempts"
         $Policy = $Policy -replace $LimitBlankExp, "MACHINE\System\CurrentControlSet\Control\Lsa\LimitBlankPasswordUse=4,$LimitBlank"
+        $Policy = $Policy -replace $DisallowPlaintextExp, "MACHINE\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\EnablePlainTextPassword=4,$DisallowPlaintext"
 
         # Write new policy
         $Policy | Out-File -Force 'cp-secpol-new.cfg'
