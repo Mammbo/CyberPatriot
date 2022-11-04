@@ -393,6 +393,7 @@ $PassComplexExp = 'PasswordComplexity\s+=\s+\d+'
 $EnableAdminExp = 'EnableAdminAccount\s+=\s+\d+'
 $EnableGuestExp = 'EnableGuestAccount\s+=\s+\d+'
 $LoginAttemptsExp = 'LockoutBadCount\s+=\s+\d+'
+$ClearPasswordExp = 'ClearTextPassword\s+=\s+\d+'
 $LimitBlankExp = 'MACHINE\\System\\CurrentControlSet\\Control\\Lsa\\LimitBlankPasswordUse\s*=\s*\d+,\d+'
 $DisallowPlaintextExp = 'MACHINE\\System\\CurrentControlSet\\Services\\LanmanWorkstation\\Parameters\\EnablePlainTextPassword\s*=\s*\d+,\d+'
 
@@ -655,6 +656,7 @@ $Menu = @{
         $Policy = $Policy -replace $LoginAttemptsExp, "LockoutBadCount = $LoginAttempts"
         $Policy = $Policy -replace $LimitBlankExp, "MACHINE\System\CurrentControlSet\Control\Lsa\LimitBlankPasswordUse=4,$LimitBlank"
         $Policy = $Policy -replace $DisallowPlaintextExp, "MACHINE\System\CurrentControlSet\Services\LanmanWorkstation\Parameters\EnablePlainTextPassword=4,$DisallowPlaintext"
+        $Policy = $Policy -replace $ClearPasswordExp, "ClearTextPassword = $DisallowPlaintext"
 
         # Write new policy
         $Policy | Out-File -Force 'cp-secpol-new.cfg'
