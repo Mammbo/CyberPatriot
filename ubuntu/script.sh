@@ -272,6 +272,7 @@ function menu {
     echo '07) Change all passwords              16) Run rkhunter'
     echo '08) Lock account                      17) Run clamav'
     echo '09) Add new group                     18) List media files'
+    echo '                                      19) List services'
     echo
     echo '99) Exit script'
     read -r -p '> ' input
@@ -659,6 +660,11 @@ function menu {
             fi
 
             echo "Found $(wc -l < "$found_media_file") media files!"
+            ;;
+
+        # List services
+        19)
+            systemctl list-units --type=service --state=active
             ;;
 
         # Exit
