@@ -574,20 +574,20 @@ function menu {
             prompt 'Allow FTP on machine?'
 
             if [ $? = 1 ]; then
-                apt-get install pure-ftpd -y
+                apt-get install vsftpd -y
 
                 echo 'Confugring UFW rules'
                 ufw allow ftp
 
-                systemctl enable pure-ftpd
-                systemctl restart pure-ftpd
-                echo "FTP configuration isn't currently automatic. See /etc/pure-ftpd/pure-ftpd.conf for config options"
+                systemctl enable vsftpd
+                systemctl restart vsftpd
+                echo "FTP configuration isn't currently automatic. See /etc/vsftpd.conf for config options"
             else
                 echo 'Stopping sevice'
-                systemctl stop pure-ftpd
-                systemctl disable pure-ftpd
+                systemctl stop vsftpd
+                systemctl disable vsftpd
                 echo 'Uninstalling'
-                apt-get purge ftpd pure-ftpd -y
+                apt-get purge ftpd vsftpd -y
                 echo 'Configuring UFW rules'
                 ufw delete allow ftp
                 echo 'FTP disabled and purged!'
