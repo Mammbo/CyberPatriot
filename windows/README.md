@@ -1,17 +1,13 @@
 # Windows Checklist
 
-Currently applies to both Windows 10 and Windows Server.
-
-> **Note**  
-> I haven't actually used Windows 10 or Server during CyberPatriot,
-> so the scripts and checklists are almost definitely incomplete.  
-> Feel free to make issues or PR's/MR's (preferably through GitLab)
-> to improve things.
+Applies to both Windows 10 and Windows Server.
+The script has been tested on both operating systems without any issues.
 
 ## Running
 
 1. Clone the repository with Git, or download as a ZIP file and extract
-2. Go to the new folder and run PowerShell (With file explorer, you can type `powershell` in the box for the current file path)
+2. Go to the `windows/` directory in the new folder and run PowerShell
+   (With file explorer, you can type `powershell -EP Bypass` in the box for the current file path)
 3. Run `Invoke-Script.ps1` (start typing "invoke" and press tab)
 4. The script should auto-elevate and prompt you to choose an option
 
