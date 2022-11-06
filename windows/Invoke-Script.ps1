@@ -821,8 +821,8 @@ $Menu = @{
                 Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableScanOnRealtimeEnable' -Value $ProcessScanning
                 Set-ItemProperty -Path $DefenderReportingPath -Name 'DisableEnhancedNotifications' -Value $EnhancedNotifications
                 Set-ItemProperty -Path $DefenderScanPath -Name 'AllowPause' -Value $AllowPause
-                Set-ItemProperty -Path $DefenderScanPath Name 'CheckForSignaturesBeforeRunningScan' -Value $UpdateBeforeScan
-                Set-ItemProperty -Path $DefenderScanPath Name 'DisableHeuristics' -Value $Heuristics
+                Set-ItemProperty -Path $DefenderScanPath -Name 'CheckForSignaturesBeforeRunningScan' -Value $UpdateBeforeScan
+                Set-ItemProperty -Path $DefenderScanPath -Name 'DisableHeuristics' -Value $Heuristics
             }
 
             Start-Service WinDefend
