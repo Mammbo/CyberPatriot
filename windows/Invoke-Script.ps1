@@ -259,8 +259,13 @@ $SafeShares = ('ADMIN$', 'C$', 'IPC$')
 ### Registry paths ###
 $WindowsUpdatePath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate'
 $AUPath = "$WindowsUpdatePath\AU"
-$SystemPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
-$WinlogonPath = 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon'
+$SystemPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+$WinlogonPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+$DefenderPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender'
+$DefenderRealtimePath = "$DefenderPath\Real-Time Protection"
+$DefenderReportingPath = "$DefenderPath\Reporting"
+$DefenderScanPath = "$DefenderPath\Scan"
+$SecurityCenterPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center'
 
 # Account to disable
 $ToDisable = 'Guest'
@@ -765,6 +770,61 @@ $Menu = @{
         Write-Output 'Done configuring interactive logon policies!'
     }
 
+    # Configure Windows Defender
+    17 = {
+        $Response = Get-Prompt 'Windows Defender' 'Enable Windows Defender?' 'Yes', 'No' 0 -StringReturn
+        if ($Response -eq 'Yes') {
+            Set-ItemProperty -Path $DefenderPath -Name 'DisableAntiSpyware' -Value 0
+
+            $ConfigureGeneral = Get-Prompt 'Windows Defender' 'Configure general settings?' 'Yes', 'No' 0 -StringReturn
+            if ($ConfigureGeneral -eq 'Yes') {
+                # Ask for preferences
+                $RoutineRemediation = Get-Prompt 'Windows Defender' 'Routinely take action on threats?' 'Yes', 'No' 0
+                $KeepAlive = Get-Prompt 'Windows Defender' 'Keep the Defender service alive at all times?' 'Yes', 'No' 0
+                $PUA = Get-Prompt 'Windows Defender' 'Detect potentially unwanted programs?' 'Yes', 'No' 0
+                $Behavioral = Get-Prompt 'Windows Defender' 'Enable behaviour monitoring?' 'Yes', 'No' 0
+                $IOAV = Get-Prompt 'Windows Defender' 'Scan all downloads and attachments?' 'Yes', 'No' 0
+                $MonitorFiles = Get-Prompt 'Windows Defender' 'Monitor file activity?' 'Yes', 'No' 0
+                $NotifyRawVolume = Get-Prompt 'Windows Defender' 'Notify about raw writes to disk?' 'Yes', 'No' 0
+                $Realtime = Get-Prompt 'Windows Defender' 'Enable realtime protection?' 'Yes', 'No' 0
+                $ProcessScanning = Get-Prompt 'Windows Defender' 'Enable process scanning (requires realtime protection)?' 'Yes', 'No' 0
+                $EnhancedNotifications = Get-Prompt 'Windows Defender' 'Enable enhanced notifications?' 'Yes', 'No' 0
+                $AllowPause = Get-Prompt 'Windows Defender' 'Allow users to pause scans?' 'Yes', 'No' 1
+                $UpdateBeforeScan = Get-Prompt 'Windows Defender' 'Update definitions before a scan?' 'Yes', 'No' 0
+                $Heuristics = Get-Prompt 'Windows Defender' 'Enable heuristics?' 'Yes', 'No' 0
+
+                # Flip values to match what the registry keys configure
+                # (Some are whether to disable, others are whether to enable)
+                If ($KeepAlive -eq 0) { $KeepAlive = 1 }
+                else { $KeepAlive = 0 }
+
+                if ($PUA -eq 0) { $PUA = 1 }
+                else { $PUA = 0 }
+
+                if ($UpdateBeforeScan -eq 0) { $UpdateBeforeScan = 1 }
+                else { $UpdateBeforeScan = 0 }
+
+                # Apply settings
+                Set-ItemProperty -Path $DefenderPath -Name 'DisableRoutinelyTakingAction' -Value $RoutineRemediation
+                Set-ItemProperty -Path $DefenderPath -Name 'ServiceKeepAlive' -Value $KeepAlive
+                Set-ItemProperty -Path $DefenderPath -Name 'PUAProtection' -Value $PUA
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableBehaviorMonitoring' -Value $Behavioral
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableIOAVProtection' -Value $IOAV
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableOnAccessProtection' -Value $MonitorFiles
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableRawWriteNotification' -Value $NotifyRawVolume
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableRealtimeMonitoring' -Value $Realtime
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableScanOnRealtimeEnable' -Value $ProcessScanning
+                Set-ItemProperty -Path $DefenderReportingPath -Name 'DisableEnhancedNotifications' -Value $EnhancedNotifications
+                Set-ItemProperty -Path $DefenderScanPath -Name 'AllowPause' -Value $AllowPause
+                Set-ItemProperty -Path $DefenderScanPath Name 'CheckForSignaturesBeforeRunningScan' -Value $UpdateBeforeScan
+                Set-ItemProperty -Path $DefenderScanPath Name 'DisableHeuristics' -Value $Heuristics
+            }
+        }
+        else {
+            Set-ItemProperty -Path $DefenderPath -Name 'DisableAntiSpyware' -Value 1
+        }
+    }
+
     # Exit script
     99 = {
         Write-Output 'Good luck and happy hacking!'
@@ -781,7 +841,7 @@ function Show-Menu {
 05) Add missing users                   14) List media files
 06) Fix administrators                  15) Configure firewall
 07) Change all passwords                16) Configure interactive logon policies
-08) Enable/disable user
+08) Enable/disable user                 17) Configure Windows Defender
 09) Add new group
 
 99) Exit script'

@@ -29,6 +29,9 @@ The script has been tested on both operating systems without any issues.
 - [x] List media files
 - [x] Configure firewall
 - [x] Confire interactive logon policies
+- [x] Configure Windows Defender
+  - [x] General settings (which protections to enable, etc.)
+  - [ ] Hidden areas of the Security Center
 
 ## Not Managed By Script
 
