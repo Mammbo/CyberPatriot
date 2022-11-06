@@ -778,6 +778,11 @@ $Menu = @{
 
             $ConfigureGeneral = Get-Prompt 'Windows Defender' 'Configure general settings?' 'Yes', 'No' 0 -StringReturn
             if ($ConfigureGeneral -eq 'Yes') {
+                # Create registry folders if they don't exist
+                New-Item -Path $DefenderRealtimePath -Force
+                New-Item -Path $DefenderReportingPath -Force
+                New-Item -Path $DefenderScanPath -Force
+
                 # Ask for preferences
                 $RoutineRemediation = Get-Prompt 'Windows Defender' 'Routinely take action on threats?' 'Yes', 'No' 0
                 $KeepAlive = Get-Prompt 'Windows Defender' 'Keep the Defender service alive at all times?' 'Yes', 'No' 0
