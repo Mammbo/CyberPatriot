@@ -819,6 +819,11 @@ $Menu = @{
                 Set-ItemProperty -Path $DefenderScanPath Name 'CheckForSignaturesBeforeRunningScan' -Value $UpdateBeforeScan
                 Set-ItemProperty -Path $DefenderScanPath Name 'DisableHeuristics' -Value $Heuristics
             }
+
+            Start-Service WinDefend
+            Start-Service WdNisSvc
+
+            Write-Output 'Done configuring Windows Defender!'
         }
         else {
             Set-ItemProperty -Path $DefenderPath -Name 'DisableAntiSpyware' -Value 1
