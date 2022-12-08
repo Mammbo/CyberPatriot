@@ -76,6 +76,20 @@ function sed_or_append {
     fi
 }
 
+# Check a file's permissions against an expected value
+# Parameters are the filename, expected access rights in octal, and whether to fix (1 or 0)
+function check_perm {
+    echo 'Checking $1...'
+    $perm = stat -c '%a' "$1"
+    if [ $perm != $2 ]; then
+        echo "Unexpected permission $perm for $1 (Expected: $2)"
+        if [ "$3" = 1 ]; then
+            chmod $2 "$1"
+            echo "Changed $1 permissions to $2"
+        fi
+    fi
+}
+
 echo '   ______      __'
 echo '  / ____/_  __/ /_  ___  _____'
 echo ' / /   / / / / __ \/ _ \/ ___/'
@@ -106,7 +120,7 @@ high_perm_min='700'
 high_perm_file='high-perms.log'
 high_perm_root='/'
 
-sudo_group='sudo'
+admin_groups='sudo adm lpadmin sambashare'
 
 bad_software='aircrack-ng deluge gameconqueror hashcat hydra john nmap openvpn qbittorrent telnet wireguard zenmap'
 
@@ -273,7 +287,7 @@ function menu {
     echo ' 6) Fix administrators                17) Run clamav'
     echo ' 7) Change all passwords              18) List media files'
     echo ' 8) Lock account                      19) List services'
-    echo ' 9) Add new group'
+    echo ' 9) Add new group                     20) Check important file permissions'
     echo '10) Disable guest account'
     echo '11) Set password expiry'
     echo
@@ -376,28 +390,34 @@ function menu {
             admin_file="$reprompt_value"
             reprompt_var 'Path to list of normal users' normal_file
             normal_file="$reprompt_value"
-            reprompt_var 'Name of sudoers group (generally `sudo` or `wheel`)' sudo_group
-            sudo_group="$reprompt_value"
+            # reprompt_var 'Add/remove users to all administrative groups?' sudo_group
+            # sudo_group="$reprompt_value"
             get_users
 
-            echo 'Ensuring admins are part of the sudo group'
+            echo 'Ensuring admins are part of the admin group'
 
             while IFS= read -r admin || [ -n "$admin" ]; do
                 if ! [ "$admin" ]; then continue; fi
-                if ! id -nG "$admin" | grep -qw "$sudo_group"; then
-                    echo "User $admin doesn't have admin perms, fixing"
-                    usermod -aG "$sudo_group" "$admin"
-                fi
+
+                for group in $admin_groups; do
+                    if ! id -nG "$admin" | grep -qw "$group"; then
+                        echo "User $admin isn't in group $group, fixing"
+                        gpasswd --add "$admin" "$group"
+                    fi
+                done
             done < "$admin_file"
 
             echo 'Ensuring standard users are not part of the sudo group'
 
             while IFS= read -r normal || [ -n "$normal" ]; do
                 if ! [ "$normal" ]; then continue; fi
-                if id -nG "$normal" | grep -qw "$sudo_group"; then
-                    echo "User $normal has admin perms and shouldn't, fixing"
-                    gpasswd --delete "$normal" "$sudo_group"
-                fi
+
+                for group in $admin_groups; do
+                    if id -nG "$normal" | grep -qw "$group"; then
+                        echo "User $normal is in group $group and shouldn't be, fixing"
+                        gpasswd --delete "$normal" "$group"
+                    fi
+                done
             done < "$normal_file"
 
             echo 'Done fixing administrators!'
@@ -407,7 +427,7 @@ function menu {
         7)
 	    get_users
             echo 'Changing passwords for the following users:'
-	    echo $users
+	        echo $users
 	    
             new_pass=''
             new_pass_confirm=''
@@ -697,6 +717,18 @@ function menu {
             prompt 'Only show active services?' 'y'
             if [ $? = 1 ]; then systemctl list-units --type=service --state=active
             else systemctl list-units --type=service; fi
+            ;;
+
+        # Check important file permissions
+        20)
+            prompt 'Automatically fix unexpected permissions?' 'y'
+            fix=$?
+
+            check_perm /etc/passwd 644 $prompt
+            check_perm /etc/group 644 $prompt
+            check_perm /etc/shadow 0 $prompt
+
+            echo 'Done checking permissions!'
             ;;
 
         # Exit
