@@ -265,16 +265,17 @@ apt_unattended_exp='^APT::Periodic::Unattended-Upgrade\s+"[0-9]+";'
 
 function menu {
     echo
-    echo '01) Run updates                       10) Disable guest account'
-    echo '02) Enable automatic updates          11) Set password expiry'
-    echo '03) Enable & Configure UFW            12) Configure services'
-    echo '04) Find/remove unauthorized users    13) Remove prohibited software'
-    echo '05) Add missing users                 14) Clear /etc/rc.local'
-    echo '06) Fix administrators                15) List files with high permissions'
-    echo '07) Change all passwords              16) Run rkhunter'
-    echo '08) Lock account                      17) Run clamav'
-    echo '09) Add new group                     18) List media files'
-    echo '                                      19) List services'
+    echo ' 1) Run updates                       12) Configure services'
+    echo ' 2) Enable automatic updates          13) Remove prohibited software'
+    echo ' 3) Enable & Configure UFW            14) Clear /etc/rc.local'
+    echo ' 4) Find/remove unauthorized users    15) List files with high permissions'
+    echo ' 5) Add missing users                 16) Run rkhunter'
+    echo ' 6) Fix administrators                17) Run clamav'
+    echo ' 7) Change all passwords              18) List media files'
+    echo ' 8) Lock account                      19) List services'
+    echo ' 9) Add new group'
+    echo '10) Disable guest account'
+    echo '11) Set password expiry'
     echo
     echo '99) Exit script'
     read -r -p '> ' input
@@ -571,7 +572,7 @@ function menu {
             fi
 
             ### FTP service ###
-            prompt 'Allow FTP on machine?'
+            prompt 'Allow FTP on machine (using vsftp specifically)?'
 
             if [ $? = 1 ]; then
                 apt-get install vsftpd -y
