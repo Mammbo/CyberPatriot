@@ -855,9 +855,26 @@ $Menu = @{
                 $HideSystray = Get-Prompt 'Windows Defender' 'Hide the system tray icon?' 'Yes', 'No' 1
 
                 # Flip values to match what the registry keys configure
-                # (Some are whether to disable, others are whether to enable)
+                if ($HideVirusArea -eq 0) { $HideVirusArea = 1 }
+                else { $HideVirusArea = 0 }
+
                 if ($HideRansomArea -eq 0) { $HideRansomArea = 1 }
                 else { $HideRansomArea = 0 }
+
+                if ($HideFirewallArea -eq 0) { $HideFirewallArea = 1 }
+                else { $HideFirewallArea = 0 }
+
+                if ($HideAppBrowserArea -eq 0) { $HideAppBrowserArea = 1 }
+                else { $HideAppBrowserArea = 0 }
+
+                if ($HidePerformanceArea -eq 0) { $HidePerformanceArea = 1 }
+                else { $HidePerformanceArea = 0 }
+
+                if ($HideAccountArea -eq 0) { $HideAccountArea = 1 }
+                else { $HideAccountArea = 0 }
+
+                if ($HideDeviceArea -eq 0) { $HideDeviceArea = 1 }
+                else { $HideDeviceArea = 0 }
 
                 if ($HideSecureBootArea -eq 0) { $HideSecureBootArea = 1 }
                 else { $HideSecureBootArea = 0 }
