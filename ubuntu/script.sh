@@ -118,7 +118,7 @@ apt_autoupgrade_conf='/etc/apt/apt.conf.d/20auto-upgrades'
 # Permissive file search parameters
 high_perm_min='700'
 high_perm_file='high-perms.log'
-high_perm_root='/'
+high_perm_root='/home/'
 
 admin_groups='sudo adm lpadmin sambashare'
 
@@ -247,7 +247,7 @@ media_files_raw=(
 )
 
 found_media_file='media.log'
-media_path='/'
+media_path='/home/'
 
 media_files=()
 
@@ -425,7 +425,7 @@ function menu {
 
         # Change all passwords
         7)
-	    get_users
+	        get_users
             echo 'Changing passwords for the following users:'
 	        echo $users
 	    
