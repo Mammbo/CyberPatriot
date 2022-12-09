@@ -259,8 +259,13 @@ $SafeShares = ('ADMIN$', 'C$', 'IPC$')
 ### Registry paths ###
 $WindowsUpdatePath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate'
 $AUPath = "$WindowsUpdatePath\AU"
-$SystemPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System"
-$WinlogonPath = 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon'
+$SystemPath = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System'
+$WinlogonPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+$DefenderPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender'
+$DefenderRealtimePath = "$DefenderPath\Real-Time Protection"
+$DefenderReportingPath = "$DefenderPath\Reporting"
+$DefenderScanPath = "$DefenderPath\Scan"
+$SecurityCenterPath = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender Security Center'
 
 # Account to disable
 $ToDisable = 'Guest'
@@ -772,6 +777,136 @@ $Menu = @{
         Write-Output 'Done configuring interactive logon policies!'
     }
 
+    # Configure Windows Defender
+    17 = {
+        $Response = Get-Prompt 'Windows Defender' 'Enable Windows Defender?' 'Yes', 'No' 0 -StringReturn
+        if ($Response -eq 'Yes') {
+            Set-ItemProperty -Path $DefenderPath -Name 'DisableAntiSpyware' -Value 0
+
+            $ConfigureGeneral = Get-Prompt 'Windows Defender' 'Configure general settings?' 'Yes', 'No' 0 -StringReturn
+            if ($ConfigureGeneral -eq 'Yes') {
+                # Create registry folders if they don't exist
+                New-Item -Path $DefenderRealtimePath -Force
+                New-Item -Path $DefenderReportingPath -Force
+                New-Item -Path $DefenderScanPath -Force
+
+                # Ask for preferences
+                $RoutineRemediation = Get-Prompt 'Windows Defender' 'Routinely take action on threats?' 'Yes', 'No' 0
+                $KeepAlive = Get-Prompt 'Windows Defender' 'Keep the Defender service alive at all times?' 'Yes', 'No' 0
+                $PUA = Get-Prompt 'Windows Defender' 'Detect potentially unwanted programs?' 'Yes', 'No' 0
+                $Behavioral = Get-Prompt 'Windows Defender' 'Enable behaviour monitoring?' 'Yes', 'No' 0
+                $IOAV = Get-Prompt 'Windows Defender' 'Scan all downloads and attachments?' 'Yes', 'No' 0
+                $MonitorFiles = Get-Prompt 'Windows Defender' 'Monitor file activity?' 'Yes', 'No' 0
+                $NotifyRawVolume = Get-Prompt 'Windows Defender' 'Notify about raw writes to disk?' 'Yes', 'No' 0
+                $Realtime = Get-Prompt 'Windows Defender' 'Enable realtime protection?' 'Yes', 'No' 0
+                $ProcessScanning = Get-Prompt 'Windows Defender' 'Enable process scanning (requires realtime protection)?' 'Yes', 'No' 0
+                $EnhancedNotifications = Get-Prompt 'Windows Defender' 'Enable enhanced notifications?' 'Yes', 'No' 0
+                $AllowPause = Get-Prompt 'Windows Defender' 'Allow users to pause scans?' 'Yes', 'No' 1
+                $UpdateBeforeScan = Get-Prompt 'Windows Defender' 'Update definitions before a scan?' 'Yes', 'No' 0
+                $Heuristics = Get-Prompt 'Windows Defender' 'Enable heuristics?' 'Yes', 'No' 0
+
+                # Flip values to match what the registry keys configure
+                # (Some are whether to disable, others are whether to enable)
+                If ($KeepAlive -eq 0) { $KeepAlive = 1 }
+                else { $KeepAlive = 0 }
+
+                if ($PUA -eq 0) { $PUA = 1 }
+                else { $PUA = 0 }
+
+                if ($UpdateBeforeScan -eq 0) { $UpdateBeforeScan = 1 }
+                else { $UpdateBeforeScan = 0 }
+
+                # Apply settings
+                Set-ItemProperty -Path $DefenderPath -Name 'DisableRoutinelyTakingAction' -Value $RoutineRemediation
+                Set-ItemProperty -Path $DefenderPath -Name 'ServiceKeepAlive' -Value $KeepAlive
+                Set-ItemProperty -Path $DefenderPath -Name 'PUAProtection' -Value $PUA
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableBehaviorMonitoring' -Value $Behavioral
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableIOAVProtection' -Value $IOAV
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableOnAccessProtection' -Value $MonitorFiles
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableRawWriteNotification' -Value $NotifyRawVolume
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableRealtimeMonitoring' -Value $Realtime
+                Set-ItemProperty -Path $DefenderRealtimePath -Name 'DisableScanOnRealtimeEnable' -Value $ProcessScanning
+                Set-ItemProperty -Path $DefenderReportingPath -Name 'DisableEnhancedNotifications' -Value $EnhancedNotifications
+                Set-ItemProperty -Path $DefenderScanPath -Name 'AllowPause' -Value $AllowPause
+                Set-ItemProperty -Path $DefenderScanPath -Name 'CheckForSignaturesBeforeRunningScan' -Value $UpdateBeforeScan
+                Set-ItemProperty -Path $DefenderScanPath -Name 'DisableHeuristics' -Value $Heuristics
+            }
+
+            $ConfigureSecurityCenter = Get-Prompt 'Windows Defender' 'Configure Security Center settings?' 'Yes', 'No' 0 -StringReturn
+            if ($ConfigureSecurityCenter -eq 'Yes') {
+                New-Item -Path $SecurityCenterPath -Force
+                New-Item -Path "$SecurityCenterPath\Virus and threat protection" -Force
+                New-Item -Path "$SecurityCenterPath\Firewall and network protection" -Force
+                New-Item -Path "$SecurityCenterPath\App and Browser protection" -Force
+                New-Item -Path "$SecurityCenterPath\Device performance and health" -Force
+                New-Item -Path "$SecurityCenterPath\Account protection" -Force
+                New-Item -Path "$SecurityCenterPath\Device security" -Force
+                New-Item -Path "$SecurityCenterPath\Systray" -Force
+
+                $HideVirusArea = Get-Prompt 'Windows Defender' 'Hide the virus and threat protection area?' 'Yes', 'No' 1
+                $HideRansomArea = Get-Prompt 'Windows Defender' 'Hide the ransomware recovery area?' 'Yes', 'No' 1
+                $HideFirewallArea = Get-Prompt 'Windows Defender' 'Hide the firewall and network protection area?' 'Yes', 'No' 1
+                $HideAppBrowserArea = Get-Prompt 'Windows Defender' 'Hide the app and browser protection area?' 'Yes', 'No' 1
+                $HidePerformanceArea = Get-Prompt 'Windows Defender' 'Hide the device performance and health area?' 'Yes', 'No' 1
+                $HideAccountArea = Get-Prompt 'Windows Defender' 'Hide the account protection area?' 'Yes', 'No' 1
+                $HideDeviceArea = Get-Prompt 'Windows Defender' 'Hide the device security area?' 'Yes', 'No' 1
+                $HideSecureBootArea = Get-Prompt 'Windows Defender' 'Hide the secure boot area?' 'Yes', 'No' 1
+                $NoUserModifySettings = Get-Prompt 'Windows Defender' 'Prevent users from modifying settings?' 'Yes', 'No' 0
+                $HideSystray = Get-Prompt 'Windows Defender' 'Hide the system tray icon?' 'Yes', 'No' 1
+
+                # Flip values to match what the registry keys configure
+                if ($HideVirusArea -eq 0) { $HideVirusArea = 1 }
+                else { $HideVirusArea = 0 }
+
+                if ($HideRansomArea -eq 0) { $HideRansomArea = 1 }
+                else { $HideRansomArea = 0 }
+
+                if ($HideFirewallArea -eq 0) { $HideFirewallArea = 1 }
+                else { $HideFirewallArea = 0 }
+
+                if ($HideAppBrowserArea -eq 0) { $HideAppBrowserArea = 1 }
+                else { $HideAppBrowserArea = 0 }
+
+                if ($HidePerformanceArea -eq 0) { $HidePerformanceArea = 1 }
+                else { $HidePerformanceArea = 0 }
+
+                if ($HideAccountArea -eq 0) { $HideAccountArea = 1 }
+                else { $HideAccountArea = 0 }
+
+                if ($HideDeviceArea -eq 0) { $HideDeviceArea = 1 }
+                else { $HideDeviceArea = 0 }
+
+                if ($HideSecureBootArea -eq 0) { $HideSecureBootArea = 1 }
+                else { $HideSecureBootArea = 0 }
+
+                if ($NoUserModifySettings -eq 0) { $NoUserModifySettings = 1 }
+                else { $NoUserModifySettings = 0 }
+
+                if ($HideSystray -eq 0) { $HideSystray = 1 }
+                else { $HideSystray = 0 }
+
+                Set-ItemProperty -Path "$SecurityCenterPath\Virus and threat protection" -Name 'UILockdown' -Value $HideVirusArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Virus and threat protection" -Name 'HideRansomwareRecovery' -Value $HideRansomArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Firewall and network protection" -Name 'UILockdown' -Value $HideFirewallArea
+                Set-ItemProperty -Path "$SecurityCenterPath\App and Browser protection" -Name 'UILockdown' -Value $HideAppBrowserArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Device performance and health" -Name 'UILockdown' -Value $HidePerformanceArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Account protection" -Name 'UILockdown' -Value $HideAccountArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Device security" -Name 'UILockdown' -Value $HideDeviceArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Device security" -Name 'HideSecureBoot' -Value $HideSecureBootArea
+                Set-ItemProperty -Path "$SecurityCenterPath\App and Browser protection" -Name 'DisallowExploitProtectionOverride' -Value $NoUserModifySettings
+                Set-ItemProperty -Path "$SecurityCenterPath\Systray" -Name 'HideSystray' -Value $HideSystray
+            }
+
+            Start-Service WinDefend
+            Start-Service WdNisSvc
+
+            Write-Output 'Done configuring Windows Defender!'
+        }
+        else {
+            Set-ItemProperty -Path $DefenderPath -Name 'DisableAntiSpyware' -Value 1
+        }
+    }
+
     # Exit script
     99 = {
         Write-Output 'Good luck and happy hacking!'
@@ -788,7 +923,7 @@ function Show-Menu {
 05) Add missing users                   14) List media files
 06) Fix administrators                  15) Configure firewall
 07) Change all passwords                16) Configure interactive logon policies
-08) Enable/disable user
+08) Enable/disable user                 17) Configure Windows Defender
 09) Add new group
 
 99) Exit script'
