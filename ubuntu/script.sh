@@ -79,9 +79,9 @@ function sed_or_append {
 # Check a file's permissions against an expected value
 # Parameters are the filename, expected access rights in octal, and whether to fix (1 or 0)
 function check_perm {
-    echo 'Checking $1...'
-    $perm = stat -c '%a' "$1"
-    if [ $perm != $2 ]; then
+    echo "Checking $1..."
+    perm=$(stat -c '%a' "$1")
+    if [ "$perm" != $2 ]; then
         echo "Unexpected permission $perm for $1 (Expected: $2)"
         if [ "$3" = 1 ]; then
             chmod $2 "$1"
@@ -724,9 +724,9 @@ function menu {
             prompt 'Automatically fix unexpected permissions?' 'y'
             fix=$?
 
-            check_perm /etc/passwd 644 $prompt
-            check_perm /etc/group 644 $prompt
-            check_perm /etc/shadow 0 $prompt
+            check_perm /etc/passwd 644 $fix
+            check_perm /etc/group 644 $fix
+            check_perm /etc/shadow 0 $fix
 
             echo 'Done checking permissions!'
             ;;
