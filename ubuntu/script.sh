@@ -106,8 +106,14 @@ echo
 echo 'CyberPatriot Scripts  Copyright (C) 2022  Adam Thompson-Sharpe'
 echo 'Licensed under the GNU General Public License, Version 3.0'
 echo
-echo 'Make sure to run this as root!'
-echo "Current user: $(whoami)"
+
+user=$(whoami)
+
+if [ "$user" != 'root' ]; then
+    echo 'Please run this as root!'
+    echo "Current user: $user"
+    exit 1
+fi
 
 # Config file locations
 sshd_conf='/etc/ssh/sshd_config'
