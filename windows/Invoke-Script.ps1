@@ -639,11 +639,14 @@ $Menu = @{
         Get-ReusedVar 'Max password age' PassMax
         Get-ReusedVar 'Minimum password age' PassMin
         Get-ReusedVar 'Minimum password length' PassLen
-        $PassComplex = Get-Prompt 'Security Policy' 'Enforce password complexity?' 'Yes', 'No' 0
-        $LockAdmin = Get-Prompt 'Security Policy' 'Lock administrator account?' 'Yes', 'No' 0
+        $PassComplex = Get-Prompt 'Security Policy' 'Enforce password complexity?' 'Yes', 'No' 0 `
+            'Require complex passwords', 'Do not require complex passwords'
+        $LockAdmin = Get-Prompt 'Security Policy' 'Lock administrator account?' 'Yes', 'No' 0 `
+            'Prevent the use of the Administrator account', 'Allow the Administrator account'
         $LockGuest = Get-Prompt 'Security Policy' 'Lock guest account?' 'Yes', 'No' 0
         Get-ReusedVar 'Max login attempts before lockout' LoginAttempts
-        $LimitBlank = Get-Prompt 'Security Policy' 'Prevent remote access with blank passwords?' 'Yes', 'No' 0
+        $LimitBlank = Get-Prompt 'Security Policy' 'Prevent remote access with blank passwords?' 'Yes', 'No' 0 `
+            'Do not allow users with blank passwords to log in remotely', 'Allow users with blank passwords to log in remotely'
         $DisallowPlaintext = Get-Prompt 'Security Policy' 'Disallow plaintext ("reversible encryption") passwords?' 'Yes', 'No' 0
 
         if ($PassComplex -eq 0) { $PassComplex = 1 }
@@ -686,7 +689,7 @@ $Menu = @{
             foreach ($Share in $Shares) {
                 Write-Host "$($Share.Name)`t`t$($Share.Path)"
             }
-            $Response = Get-Prompt 'File Shares' 'Remove all found shares?' 'Yes', 'No' 0 -StringReturn `
+            $Response = Get-Prompt 'File Shares' 'Remove all found shares?' 'Yes', 'No' 1 -StringReturn `
                 'Remove the listed shares', 'Leave the listed shares alone'
             if ($Response -eq 'Yes') {
                 foreach ($Share in $Shares) {
@@ -730,10 +733,11 @@ $Menu = @{
             Set-NetFirewallProfile -Profile Domain, Public, Private -Enabled True
             Write-Output 'Firewall enabled'
             $Response = Get-Prompt 'Windows Firewall' 'Configure settings now?' 'Yes', 'No' 0 -StringReturn
-            $ToConfigure = Read-Host -Prompt 'Which profiles to configure? (Space-separated list; Public, Domain, and/or Private)'
+            $ToConfigure = Read-Host -Prompt 'Which profiles to configure? (Space-separated list of: Public, Domain, and/or Private)'
             $ToConfigure = $ToConfigure.Split(' ') | Where-Object { $_.ToLower() -in ('Public', 'Domain', 'Private') }
             if ($Response -eq 'Yes') {
-                $BlockInbound = Get-Prompt 'Windows Firewall' 'What to do with inbound connections by default?' 'Allow', 'Block' 1 -StringReturn
+                $BlockInbound = Get-Prompt 'Windows Firewall' 'What to do with inbound connections by default?' 'Allow', 'Block' 1 -StringReturn `
+                    'Block external connections by default', 'Allow external connections by default'
                 $BlockOutbound = Get-Prompt 'Windows Firewall' 'What to do with outbound connections by default?' 'Allow', 'Block' 0 -StringReturn
                 $LogAllowed = Get-Prompt 'Windows Firewall' 'Log allowed connections?' 'True', 'False' 1 -StringReturn
                 $LogBlocked = Get-Prompt 'Windows Firewall' 'Log blocked connections?' 'True', 'False' 0 -StringReturn
@@ -754,9 +758,12 @@ $Menu = @{
 
     # Configure interactive logon policies
     16 = {
-        $RequireCAD = Get-Prompt 'Interactive Logon' 'Require Ctrl+Alt+Delete for logon?' 'Yes', 'No' 0
-        $DisplayUsernameLogon = Get-Prompt 'Interactive Logon' 'Display username at logon?' 'Yes', 'No' 1
+        $RequireCAD = Get-Prompt 'Interactive Logon' 'Require Ctrl+Alt+Delete for logon?' 'Yes', 'No' 0 `
+            'Require Ctrl+Alt+Delete to be pressed before a user can log on', 'Do not require Ctrl+Alt+Delete'
+        $DisplayUsernameLogon = Get-Prompt 'Interactive Logon' 'Display username at logon?' 'Yes', 'No' 1 `
+            'Display the username at logon', 'Require the username to be typed at logon'
         $DisplayUsernameLocked = Get-Prompt 'Interactive Logon' 'Display username when locked?' 'Yes', 'No' 1
+        'Display the username when the system is locked', 'Require the username to be typed when the system is locked'
         Get-ReusedVar 'Days to warn user before password expiry (0 to disable)' PassExpiryWarn
 
         if ($DisplayUsernameLocked -eq 0) { $DisplayUsernameLocked = 1 }
