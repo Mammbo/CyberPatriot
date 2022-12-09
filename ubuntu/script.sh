@@ -592,7 +592,7 @@ function menu {
             fi
 
             ### FTP service ###
-            prompt 'Allow FTP on machine (using vsftp specifically)?'
+            prompt 'Allow FTP (with VSFTPD) on machine?'
 
             if [ $? = 1 ]; then
                 apt-get install vsftpd -y
@@ -612,6 +612,29 @@ function menu {
                 echo 'Configuring UFW rules'
                 ufw delete allow ftp
                 echo 'FTP disabled and purged!'
+            fi
+
+            ## Postfix service
+            prompt 'Allow Mail (with Postfix) on machine?'
+
+            if [ $? = 1 ]; then
+                apt-get install postfix -y
+
+                echo 'Configuring UFW rules'
+                ufw allow smtp
+
+                systemctl enable postfix
+                systemctl restart postfix
+                echo 'Done configuring Postfix!'
+            else
+                echo 'Stopping service'
+                systemctl stop postfix
+                systemctl disable postfix
+                echo 'Uninstalling'
+                apt-get purge postfix -y
+                echo 'Configuring UFW rules'
+                ufw delete allow smtp
+                echo 'Postfix disabled and purged!'
             fi
             ;;
 
