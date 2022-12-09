@@ -916,15 +916,15 @@ $Menu = @{
 
 function Show-Menu {
     Write-Output '
-01) Run updates                         10) Configure remote desktop
-02) Enable automatic updates            11) Configure security policy
-03) Set UAC to highest                  12) List/remove SMB shares
-04) Find/remove unauthorized users      13) List services
-05) Add missing users                   14) List media files
-06) Fix administrators                  15) Configure firewall
-07) Change all passwords                16) Configure interactive logon policies
-08) Enable/disable user                 17) Configure Windows Defender
-09) Add new group
+ 1) Run updates                         10) Configure remote desktop
+ 2) Enable automatic updates            11) Configure security policy
+ 3) Set UAC to highest                  12) List/remove SMB shares
+ 4) Find/remove unauthorized users      13) List services
+ 5) Add missing users                   14) List media files
+ 6) Fix administrators                  15) Configure firewall
+ 7) Change all passwords                16) Configure interactive logon policies
+ 8) Enable/disable user                 17) Configure Windows Defender
+ 9) Add new group
 
 99) Exit script'
 
