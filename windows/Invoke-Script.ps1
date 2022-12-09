@@ -832,6 +832,54 @@ $Menu = @{
                 Set-ItemProperty -Path $DefenderScanPath -Name 'DisableHeuristics' -Value $Heuristics
             }
 
+            $ConfigureSecurityCenter = Get-Prompt 'Windows Defender' 'Configure Security Center settings?' 'Yes', 'No' 0 -StringReturn
+            if ($ConfigureSecurityCenter -eq 'Yes') {
+                New-Item -Path $SecurityCenterPath -Force
+                New-Item -Path "$SecurityCenterPath\Virus and threat protection" -Force
+                New-Item -Path "$SecurityCenterPath\Firewall and network protection" -Force
+                New-Item -Path "$SecurityCenterPath\App and Browser protection" -Force
+                New-Item -Path "$SecurityCenterPath\Device performance and health" -Force
+                New-Item -Path "$SecurityCenterPath\Account protection" -Force
+                New-Item -Path "$SecurityCenterPath\Device security" -Force
+                New-Item -Path "$SecurityCenterPath\Systray" -Force
+
+                $HideVirusArea = Get-Prompt 'Windows Defender' 'Hide the virus and threat protection area?' 'Yes', 'No' 1
+                $HideRansomArea = Get-Prompt 'Windows Defender' 'Hide the ransomware recovery area?' 'Yes', 'No' 1
+                $HideFirewallArea = Get-Prompt 'Windows Defender' 'Hide the firewall and network protection area?' 'Yes', 'No' 1
+                $HideAppBrowserArea = Get-Prompt 'Windows Defender' 'Hide the app and browser protection area?' 'Yes', 'No' 1
+                $HidePerformanceArea = Get-Prompt 'Windows Defender' 'Hide the device performance and health area?' 'Yes', 'No' 1
+                $HideAccountArea = Get-Prompt 'Windows Defender' 'Hide the account protection area?' 'Yes', 'No' 1
+                $HideDeviceArea = Get-Prompt 'Windows Defender' 'Hide the device security area?' 'Yes', 'No' 1
+                $HideSecureBootArea = Get-Prompt 'Windows Defender' 'Hide the secure boot area?' 'Yes', 'No' 1
+                $NoUserModifySettings = Get-Prompt 'Windows Defender' 'Prevent users from modifying settings?' 'Yes', 'No' 0
+                $HideSystray = Get-Prompt 'Windows Defender' 'Hide the system tray icon?' 'Yes', 'No' 1
+
+                # Flip values to match what the registry keys configure
+                # (Some are whether to disable, others are whether to enable)
+                if ($HideRansomArea -eq 0) { $HideRansomArea = 1 }
+                else { $HideRansomArea = 0 }
+
+                if ($HideSecureBootArea -eq 0) { $HideSecureBootArea = 1 }
+                else { $HideSecureBootArea = 0 }
+
+                if ($NoUserModifySettings -eq 0) { $NoUserModifySettings = 1 }
+                else { $NoUserModifySettings = 0 }
+
+                if ($HideSystray -eq 0) { $HideSystray = 1 }
+                else { $HideSystray = 0 }
+
+                Set-ItemProperty -Path "$SecurityCenterPath\Virus and threat protection" -Name 'UILockdown' -Value $HideVirusArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Virus and threat protection" -Name 'HideRansomwareRecovery' -Value $HideRansomArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Firewall and network protection" -Name 'UILockdown' -Value $HideFirewallArea
+                Set-ItemProperty -Path "$SecurityCenterPath\App and Browser protection" -Name 'UILockdown' -Value $HideAppBrowserArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Device performance and health" -Name 'UILockdown' -Value $HidePerformanceArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Account protection" -Name 'UILockdown' -Value $HideAccountArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Device security" -Name 'UILockdown' -Value $HideDeviceArea
+                Set-ItemProperty -Path "$SecurityCenterPath\Device security" -Name 'HideSecureBoot' -Value $HideSecureBootArea
+                Set-ItemProperty -Path "$SecurityCenterPath\App and Browser protection" -Name 'DisallowExploitProtectionOverride' -Value $NoUserModifySettings
+                Set-ItemProperty -Path "$SecurityCenterPath\Systray" -Name 'HideSystray' -Value $HideSystray
+            }
+
             Start-Service WinDefend
             Start-Service WdNisSvc
 
