@@ -907,6 +907,23 @@ $Menu = @{
         }
     }
 
+    # Filter scheduled tasks
+    18 = {
+        $TimeInterval = Read-Host 'Time interval (ie. 1H for one hour, 5M for five minutes)'
+        $TimeInterval = "PT$TimeInterval"
+
+        $Tasks = Get-ScheduledTask | Where-Object { $_.Triggers }
+        foreach ($Task in $Tasks) {
+            foreach ($Trigger in $Task.Triggers) {
+                if ($Trigger.RandomDelay -eq $TimeInterval -or $Trigger.Repetition.Interval -eq $TimeInterval) {
+                    Write-Output $Task
+                }
+            }
+        }
+
+        Write-Output 'Done filtering tasks!'
+    }
+
     # Exit script
     99 = {
         Write-Output 'Good luck and happy hacking!'
@@ -924,7 +941,7 @@ function Show-Menu {
  6) Fix administrators                  15) Configure firewall
  7) Change all passwords                16) Configure interactive logon policies
  8) Enable/disable user                 17) Configure Windows Defender
- 9) Add new group
+ 9) Add new group                       18) Filter scheduled tasks
 
 99) Exit script'
 
