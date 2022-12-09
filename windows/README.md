@@ -32,6 +32,7 @@ The script has been tested on both operating systems without any issues.
 - [x] Configure Windows Defender
   - [x] General settings (which protections to enable, etc.)
   - [x] Hidden areas of the Security Center
+- [x] Find scheduled tasks by interval
 
 ## Not Managed By Script
 
