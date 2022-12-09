@@ -705,7 +705,7 @@ function menu {
                 clamscan_params+=('--verbose')
             fi
 
-            apt-get install clamav -y
+            apt-get install clamav clamtk -y
 
             prompt 'Enable freshclam service? (Only needs to be done once)' 'n'
             if [ $? = 1 ]; then
